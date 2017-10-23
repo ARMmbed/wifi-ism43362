@@ -71,16 +71,26 @@
 class BufferedSpi : public SPI 
 {
 private:
+    DigitalOut    nss;
     MyBuffer <char> _txbuf;
     uint32_t      _buf_size;
     uint32_t      _tx_multiple;
-    DigitalOut    nss;
-    void rxIrq(void);
+    volatile int _timeout;
     void txIrq(void);
     void prime(void);
 
+    InterruptIn* _datareadyInt;
+    volatile int _cmddata_rdy_rising_event;
+    void DatareadyRising(void);
+    int wait_cmddata_rdy_rising_event(void);
+    int wait_cmddata_rdy_high(void);
+
+
     Callback<void()> _cbs[2];
-    
+
+    Callback<void()> _sigio_cb;
+    uint8_t          _sigio_event;
+
 public:
     MyBuffer <char> _rxbuf;
     DigitalIn dataready;
@@ -101,7 +111,7 @@ public:
      *  @param tx_multiple amount of max printf() present in the internal ring buffer at one time
      *  @param name optional name
     */
-    BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName datareadypin, uint32_t buf_size = 384, uint32_t tx_multiple = 4,const char* name=NULL);
+    BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName datareadypin, uint32_t buf_size = 1440, uint32_t tx_multiple = 4,const char* name=NULL);
     
     /** Destroy a BufferedSpi Port
      */
@@ -138,7 +148,6 @@ public:
      *  @return A byte that came in on the SPI Port
      */
     virtual int getc(void);
-    virtual int get16b(void);
     
     /** Write a single byte to the BufferedSpi Port.
      *  @param c The byte to write to the SPI Port
@@ -163,15 +172,40 @@ public:
      *  @param length The amount of data being pointed to
      *  @return The number of bytes written to the Spi Port Buffer
      */
-    virtual ssize_t write(const void *s, std::size_t length);
-    
+    virtual ssize_t buffwrite(const void *s, std::size_t length);
+
+    /** Send datas to the Spi port that are already present
+     *  in the internal _txbuffer
+     *  @param length
+     *  @return the number of bytes written on the SPI port
+     */
+    virtual ssize_t buffsend(size_t length);
+
     /** Read data from the Spi Port to the _rxbuf
      *  @param max: optional. = max sieze of the input read
      *  @return The number of bytes read from the SPI port and written to the _rxbuf
      */
     virtual ssize_t read();
-    virtual ssize_t read(int max);
+    virtual ssize_t read(uint32_t max);
 
+    /**
+    * Allows timeout to be changed between commands
+    *
+    * @param timeout timeout of the connection
+    */
+    void setTimeout(int timeout)
+    {
+        /*  this is a safe guard timeout in case module is stuck
+         *  so take 5 sec margin compared to module timeout, to
+         *  really only detect case where module is stuck */
+        _timeout = timeout + 5000;
+    }
+
+    /** Register a callback once any data is ready for sockets
+     *  @param func     Function to call on state change
+     */
+    virtual void sigio(Callback<void()> func);
+    
     /** Attach a function to call whenever a serial interrupt is generated
      *  @param func A pointer to a void function, or 0 to set as none
      *  @param type Which serial interrupt to attach the member function to (Serial::RxIrq for receive, TxIrq for transmit buffer empty)

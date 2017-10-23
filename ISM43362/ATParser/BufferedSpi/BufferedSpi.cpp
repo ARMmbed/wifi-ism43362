@@ -22,14 +22,71 @@
 
 #include "BufferedSpi.h"
 #include <stdarg.h>
+#include "mbed_debug.h"
+#include "mbed_error.h"
+
+// change to true to add few SPI debug lines
+#define local_debug false
 
 extern "C" int BufferedPrintfC(void *stream, int size, const char* format, va_list arg);
 
-BufferedSpi::BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName datareadypin, uint32_t buf_size, uint32_t tx_multiple, const char* name)
-    : SPI(mosi, miso, sclk, NC) , nss(nss), dataready(datareadypin), _rxbuf(buf_size), _txbuf((uint32_t)(tx_multiple*buf_size))
+void BufferedSpi::DatareadyRising(void)
+{
+   if (_cmddata_rdy_rising_event == 1) {
+     _cmddata_rdy_rising_event=0;
+   }
+}
+
+int BufferedSpi::wait_cmddata_rdy_high(void)
+{
+  Timer timer;
+  timer.start();
+
+  /* wait for dataready = 1 */
+  while(dataready.read() == 0) {
+       if (timer.read_ms() > _timeout) {
+          debug_if(local_debug,"ERROR: SPI write timeout\r\n");
+          return -1;
+       }
+  }
+
+  _cmddata_rdy_rising_event = 1;
+
+  return 0;
+}
+
+int BufferedSpi::wait_cmddata_rdy_rising_event(void)
+{
+    Timer timer;
+    timer.start();
+
+    while (_cmddata_rdy_rising_event == 1) {
+       if (timer.read_ms() > _timeout) {
+           _cmddata_rdy_rising_event = 0;
+           if (dataready.read() == 1) {
+               debug_if(local_debug,"ERROR: We missed rising event !! (timemout=%d)\r\n", _timeout);
+           }
+           debug_if(local_debug,"ERROR: SPI read timeout\r\n");
+           return -1;
+       }
+    }
+
+    return 0;
+}
+
+BufferedSpi::BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName _nss, PinName _datareadypin,
+                         uint32_t buf_size, uint32_t tx_multiple, const char* name)
+    : SPI(mosi, miso, sclk, NC), nss(_nss),  _txbuf((uint32_t)(tx_multiple*buf_size)), _rxbuf(buf_size), dataready(_datareadypin)
 {
     this->_buf_size = buf_size;
-    this->_tx_multiple = tx_multiple;   
+    this->_tx_multiple = tx_multiple;
+    this->_sigio_event = 0;
+
+    _datareadyInt = new InterruptIn(_datareadypin);
+    _datareadyInt->rise(callback(this, &BufferedSpi::DatareadyRising));
+
+    _cmddata_rdy_rising_event = 1;
+
     return;
 }
 
@@ -52,13 +109,13 @@ void BufferedSpi::format(int bits, int mode)
 void BufferedSpi::disable_nss()
 {
     nss = 1;
-    wait_ms(10);
+    wait_us(15);
 }
 
 void BufferedSpi::enable_nss()
 {
     nss = 0;
-    wait_ms(10);
+    wait_us(15);
 }
 
 int BufferedSpi::readable(void)
@@ -75,25 +132,12 @@ int BufferedSpi::getc(void)
 {
     if (_rxbuf.available())
         return _rxbuf;
-    else return 0;
-}
-
-int BufferedSpi::get16b(void)
-{
-    int res;
-    res = SPI::write(0);  // dummy write to receive
-    _rxbuf = (char)(res&0xFF);
-    _rxbuf = (char)((res>>8)&0xFF);
-
-    res = _rxbuf;
-    res |= ((_rxbuf<<8)&0xFF00);
-    return res;
+    else return -1;
 }
 
 int BufferedSpi::putc(int c)
 {
     _txbuf = (char)c;
-    BufferedSpi::prime();
 
     return c;
 }
@@ -121,7 +165,7 @@ int BufferedSpi::puts(const char *s)
 extern "C" size_t BufferedSpiThunk(void *buf_spi, const void *s, size_t length)
 {
     BufferedSpi *buffered_spi = (BufferedSpi *)buf_spi;
-    return buffered_spi->write(s, length);
+    return buffered_spi->buffwrite(s, length);
 }
 
 int BufferedSpi::printf(const char* format, ...)
@@ -133,14 +177,16 @@ int BufferedSpi::printf(const char* format, ...)
     return r;
 }
 
-ssize_t BufferedSpi::write(const void *s, size_t length)
+ssize_t BufferedSpi::buffwrite(const void *s, size_t length)
 {
     /* flush buffer from previous message */
     this->flush_txbuf();
-    
-    /* wait for dataready = 1 */
-    while(dataready.read() == 0) {
+
+    if (wait_cmddata_rdy_high() < 0) {
+        debug_if(local_debug, "BufferedSpi::buffwrite timeout (%d)\r\n", _timeout);
+        return -1;
     }
+
     this->enable_nss();
     
     if (s != NULL && length > 0) {
@@ -158,6 +204,7 @@ ssize_t BufferedSpi::write(const void *s, size_t length)
 
         /* 2nd write in SPI */
         BufferedSpi::txIrq();                // only write to hardware in one place
+
         this->disable_nss();
         return ptr - (const char*)s;
     }
@@ -166,75 +213,85 @@ ssize_t BufferedSpi::write(const void *s, size_t length)
     return 0;
 }
 
+ssize_t BufferedSpi::buffsend(size_t length)
+{
+    /* wait for dataready = 1 */
+    if (wait_cmddata_rdy_high() < 0) {
+        debug_if(local_debug, "BufferedSpi::buffsend timeout (%d)\r\n", _timeout);
+        return -1;
+    }
+
+    this->enable_nss();
+
+    /* _txbuffer is already filled with data to send */
+    /* check if _txbuffer needs padding to send the last char */
+    if (length & 1) {
+        _txbuf = '\n';
+        length++;
+    }
+    BufferedSpi::txIrq();                // only write to hardware in one place
+
+    this->disable_nss();
+
+    return length;
+}
+
 ssize_t BufferedSpi::read()
 {
     return this->read(0);
 }
 
-ssize_t BufferedSpi::read(int max)
+ssize_t BufferedSpi::read(uint32_t max)
 {
-    int len = 0;
+    uint32_t len = 0;
     int tmp;
-    // TO DO : add SPI flush ! HAL_SPIEx_FlushRxFifo(&hspi);
-    
+
     disable_nss();
+
     /* wait for data ready is up */
-    while (dataready.read() == 0) {
-        // TO DO handle the timeout
+    if(wait_cmddata_rdy_rising_event() != 0) {
+        debug_if(local_debug, "BufferedSpi::read timeout (%d)\r\n", _timeout);
+        return -1;
     }
-    
+
     enable_nss();
+    while (dataready.read() == 1 && (len < (_buf_size - 1))) {
+        tmp = SPI::write(0xAA);  // dummy write to receive 2 bytes
 
-    while (dataready.read() == 1) {
-        tmp = SPI::write(0);  // dummy write to receive 2 bytes
-
-        if ((tmp&0xFF00) == 0x1500) { // last char reached ?
-            wait_us(100);
-        }
-        if (dataready.read() == 0) { /* end of reception reached */
-            if ((tmp&0XFF00) == 0x1500){
-                if ((max != 0) && (len < max)) { // to remove once data > buff size is handled
-                    _rxbuf = (char)(tmp & 0xFF);
-                    len++;
-                }
-                break;
+        if (!((len == 0) && (tmp == 0x0A0D))) {
+            /* do not take into account the 2 firts \r \n char in the buffer */
+            if ((max == 0) || (len < max)) {
+                _rxbuf = (char)(tmp & 0x00FF);
+                _rxbuf = (char)((tmp >>8)& 0xFF);
+                len += 2;
             }
         }
-        // TO : CHECK HOW TO HANDLE CASE WHEN number read data > buff size
-        if ((max == 0) || ((max !=0) && (len < max))) {
-            _rxbuf = (char)(tmp & 0x00FF);
-            _rxbuf = (char)((tmp >>8)& 0xFF);
-            len += 2;
-        }
-        // to put back once the above case will be handled
-        // if ((max != 0) && (len >= max)) {
-        //    break;
-        //}
     }
     disable_nss();
-    
-    return len;
-}
-void BufferedSpi::rxIrq(void)
-{
-    // read from the peripheral 
-    _rxbuf = (char)SPI::write(0);
-    if (_cbs[RxIrq]) {
-        _cbs[RxIrq]();
+
+    if (len >= _buf_size) {
+        debug_if(local_debug, "firmware ERROR ES_WIFI_ERROR_STUFFING_FOREVER\r\n");
+        return -1;
     }
-    return;
+
+    debug_if(local_debug, "SPI READ %d BYTES\r\n", len);
+
+    return len;
 }
 
 void BufferedSpi::txIrq(void)
 { /* write everything available in the _txbuffer */
     int value = 0;
+    int dbg_cnt = 0;
     while (_txbuf.available() && (_txbuf.getNbAvailable()>0)) {
         value = _txbuf.get();
         if (_txbuf.available() && ((_txbuf.getNbAvailable()%2)!=0)) {
             value |= ((_txbuf.get()<<8)&0XFF00);
             SPI::write(value);
+            dbg_cnt++;
         }
     }
+    debug_if(local_debug, "SPI Sent %d BYTES\r\n", 2*dbg_cnt);
     // disable the TX interrupt when there is nothing left to send
     BufferedSpi::attach(NULL, BufferedSpi::TxIrq);
     // trigger callback if necessary
@@ -253,5 +310,17 @@ void BufferedSpi::prime(void)
 void BufferedSpi::attach(Callback<void()> func, IrqType type)
 {
     _cbs[type] = func;
+}
+
+void BufferedSpi::sigio(Callback<void()> func) {
+    core_util_critical_section_enter();
+    _sigio_cb = func;
+    if (_sigio_cb) {
+        if (_sigio_event == 1) {
+            _sigio_cb();
+            _sigio_event = 0;
+        }
+    }
+    core_util_critical_section_exit();
 }
 

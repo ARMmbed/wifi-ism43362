@@ -21,7 +21,7 @@
 #include "ISM43362.h"
 
 
-#define ISM43362_SOCKET_COUNT 5
+#define ISM43362_SOCKET_COUNT 4
 
 /** ISM43362Interface class
  *  Implementation of the NetworkStack for the ISM43362
@@ -274,17 +274,27 @@ protected:
 private:
     ISM43362 _ism;
     bool _ids[ISM43362_SOCKET_COUNT];
+    uint32_t _socket_obj[ISM43362_SOCKET_COUNT]; // store addresses of socket handles
+    Mutex _mutex;
+    Thread thread_read_socket;
     char ap_ssid[33]; /* 32 is what 802.11 defines as longest possible name; +1 for the \0 */
     nsapi_security_t ap_sec;
     uint8_t ap_ch;
     char ap_pass[64]; /* The longest allowed passphrase */
 
     void event();
-
     struct {
         void (*callback)(void *);
         void *data;
     } _cbs[ISM43362_SOCKET_COUNT];
+
+    /** Function called by the socket read thread to check if data is available on the wifi module
+     *
+     */
+    virtual void socket_check_read();
+    int socket_send_nolock(void *handle, const void *data, unsigned size);
+    int socket_connect_nolock(void *handle, const SocketAddress &addr);
+
 };
 
 #endif

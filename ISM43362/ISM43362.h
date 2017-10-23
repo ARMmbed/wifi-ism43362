@@ -26,6 +26,11 @@
 #define ES_WIFI_API_REV_SIZE                        16
 #define ES_WIFI_STACK_REV_SIZE                      16
 #define ES_WIFI_RTOS_REV_SIZE                       16
+
+// The input range for AT Command 'R1' is 0 to 1200 bytes
+// ‘R1’ Set Read Transport Packet Size (bytes)
+#define ES_WIFI_MAX_RX_PACKET_SIZE                     1200
+
 /** ISM43362Interface class.
     This is an interface to a ISM43362 radio.
  */
@@ -37,18 +42,10 @@ public:
     /**
     * Check firmware version of ISM43362
     *
-    * @return integer firmware version or -1 if firmware query command gives outdated response
+    * @return null-terminated fw version or null if no version is read
     */
-    int get_firmware_version(void);
+    const char *get_firmware_version(void);
     
-    /**
-    * Startup the ISM43362
-    *
-    * @param mode mode of WIFI 1-client, 2-host, 3-both
-    * @return true only if ISM43362 was setup correctly
-    */
-    bool startup(int mode);
-
     /**
     * Reset ISM43362
     *
@@ -202,6 +199,15 @@ public:
     void attach(Callback<void()> func);
 
     /**
+    * Check is datas are available to read for a socket
+    * @param id socket id
+    * @param data placeholder for returned information
+    * @param amount size to read for the check
+    * @return amount of read value, or -1 for errors
+    */
+    int check_recv_status(int id, void *data);
+    
+    /**
     * Attach a function to call whenever network state has changed
     *
     * @param obj pointer to the object to call the member function on
@@ -216,8 +222,10 @@ private:
     BufferedSpi _bufferspi;
     ATParser _parser;
     DigitalOut _resetpin;
-    int _timeout;
-    void reset_module(DigitalOut rstpin);
+    volatile int _timeout;
+    volatile int _active_id;
+    void print_rx_buff(void);
+    bool check_response(void);
     struct packet {
         struct packet *next;
         int id;
@@ -225,12 +233,12 @@ private:
         // data follows
     } *_packets, **_packets_end;
     void _packet_handler();
-    bool recv_ap(nsapi_wifi_ap_t *ap);
 
     char _ip_buffer[16];
     char _gateway_buffer[16];
     char _netmask_buffer[16];
     char _mac_buffer[18];
+    char _fw_version[16];
 };
 
 #endif
