@@ -59,6 +59,7 @@ int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_securit
 
 int ISM43362Interface::connect()
 {
+    _mutex.lock();
     const char* read_version;
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
@@ -94,12 +95,14 @@ int ISM43362Interface::connect()
     }
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
+    _mutex.unlock();
 
     return NSAPI_ERROR_OK;
 }
 
 nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *address, nsapi_version_t version)
 {
+    _mutex.lock();
     if (address->set_ip_address(name)) {
         if (version != NSAPI_UNSPEC && address->get_ip_version() != version) {
             return NSAPI_ERROR_DNS_FAILURE;
@@ -107,7 +110,7 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
         return NSAPI_ERROR_OK;
     }
-    
+
     char *ipbuff = new char[NSAPI_IP_SIZE];
     int ret = 0;
     
@@ -116,13 +119,17 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
     } else {
         address->set_ip_address(ipbuff);
     }
+    _mutex.unlock();
 
     delete[] ipbuff;
+
     return ret;
 }
 
 int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi_security_t security)
 {
+    _mutex.lock();
+
     memset(ap_ssid, 0, sizeof(ap_ssid));
     strncpy(ap_ssid, ssid, sizeof(ap_ssid));
 
@@ -130,6 +137,7 @@ int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi
     strncpy(ap_pass, pass, sizeof(ap_pass));
 
     ap_sec = security;
+    _mutex.unlock();
 
     return 0;
 }
@@ -141,44 +149,66 @@ int ISM43362Interface::set_channel(uint8_t channel)
 
 int ISM43362Interface::disconnect()
 {
+    _mutex.lock();
+
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
     if (!_ism.disconnect()) {
         return NSAPI_ERROR_DEVICE_ERROR;
     }
 
+    _mutex.unlock();
+
     return NSAPI_ERROR_OK;
 }
 
 const char *ISM43362Interface::get_ip_address()
 {
-    return _ism.getIPAddress();
+    _mutex.lock();
+    const char *ret = _ism.getIPAddress();
+    _mutex.unlock();
+    return ret;
 }
 
 const char *ISM43362Interface::get_mac_address()
 {
-    return _ism.getMACAddress();
+    _mutex.lock();
+    const char *ret = _ism.getMACAddress();
+    _mutex.unlock();
+    return ret;
 }
 
 const char *ISM43362Interface::get_gateway()
 {
-    return _ism.getGateway();
+    _mutex.lock();
+    const char *ret = _ism.getGateway();
+    _mutex.unlock();
+    return ret;
 }
 
 const char *ISM43362Interface::get_netmask()
 {
-    return _ism.getNetmask();
+    _mutex.lock();
+    const char *ret = _ism.getNetmask();
+    _mutex.unlock();
+    return ret;
 }
 
 int8_t ISM43362Interface::get_rssi()
 {
-    return _ism.getRSSI();
+    _mutex.lock();
+    int8_t ret = _ism.getRSSI();
+    _mutex.unlock();
+    return ret;
 }
 
 int ISM43362Interface::scan(WiFiAccessPoint *res, unsigned count)
 {
+    _mutex.lock();
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
-    return _ism.scan(res, count);
+    int ret = _ism.scan(res, count);
+    _mutex.unlock();
+    return ret;
 }
 
 struct ISM43362_socket {
