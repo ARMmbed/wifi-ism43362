@@ -30,6 +30,8 @@
 // The input range for AT Command 'R1' is 0 to 1200 bytes
 // ‘R1’ Set Read Transport Packet Size (bytes)
 #define ES_WIFI_MAX_RX_PACKET_SIZE                     1200
+// Module maxume DATA payload for Tx packet is 1460
+#define ES_WIFI_MAX_TX_PACKET_SIZE                     1460
 
 /** ISM43362Interface class.
     This is an interface to a ISM43362 radio.

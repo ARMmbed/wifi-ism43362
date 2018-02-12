@@ -360,8 +360,8 @@ int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsign
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
     _ism.setTimeout(ISM43362_SEND_TIMEOUT);
 
-    if (size > ES_WIFI_MAX_RX_PACKET_SIZE) {
-        size = ES_WIFI_MAX_RX_PACKET_SIZE;
+    if (size > ES_WIFI_MAX_TX_PACKET_SIZE) {
+        size = ES_WIFI_MAX_TX_PACKET_SIZE;
     }
 
     if (!_ism.send(socket->id, data, size)) {

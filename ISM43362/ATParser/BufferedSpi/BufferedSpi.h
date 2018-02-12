@@ -111,7 +111,7 @@ public:
      *  @param tx_multiple amount of max printf() present in the internal ring buffer at one time
      *  @param name optional name
     */
-    BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName datareadypin, uint32_t buf_size = 1440, uint32_t tx_multiple = 4,const char* name=NULL);
+    BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName datareadypin, uint32_t buf_size = 1480, uint32_t tx_multiple = 4,const char* name=NULL);
     
     /** Destroy a BufferedSpi Port
      */
