@@ -28,7 +28,7 @@ ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinNam
     DigitalOut wakeup_pin(wakeup);
     ISM43362::setTimeout((uint32_t)5000);
     _bufferspi.format(16, 0); /* 16bits, ploarity low, phase 1Edge, master mode */
-    _bufferspi.frequency(10000000); /* up to 20 MHz */
+    _bufferspi.frequency(20000000); /* up to 20 MHz */
     _active_id = 0xFF;
 
     reset();
