@@ -113,7 +113,7 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
     char *ipbuff = new char[NSAPI_IP_SIZE];
     int ret = 0;
-    
+    _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
     if(!_ism.dns_lookup(name, ipbuff)) {
         ret = NSAPI_ERROR_DEVICE_ERROR;
     } else {
