@@ -85,7 +85,7 @@ int ISM43362Interface::connect()
 
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
 
-    if (!_ism.connect(ap_ssid, ap_pass)) {
+    if (!_ism.connect(ap_ssid, ap_pass, (uint32_t)ap_sec)) {
         return NSAPI_ERROR_NO_CONNECTION;
     }
 

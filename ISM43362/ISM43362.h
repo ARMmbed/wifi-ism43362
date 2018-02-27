@@ -28,7 +28,7 @@
 #define ES_WIFI_RTOS_REV_SIZE                       16
 
 // The input range for AT Command 'R1' is 0 to 1200 bytes
-// ‘R1’ Set Read Transport Packet Size (bytes)
+// 'R1' Set Read Transport Packet Size (bytes)
 #define ES_WIFI_MAX_RX_PACKET_SIZE                     1200
 // Module maxume DATA payload for Tx packet is 1460
 #define ES_WIFI_MAX_TX_PACKET_SIZE                     1460
@@ -68,9 +68,10 @@ public:
     *
     * @param ap the name of the AP
     * @param passPhrase the password of AP
+    * @param ap_sec the security level of network AP
     * @return true only if ISM43362 is connected successfully
     */
-    bool connect(const char *ap, const char *passPhrase);
+    bool connect(const char *ap, const char *passPhrase, uint32_t ap_sec);
 
     /**
     * Disconnect ISM43362 from AP
