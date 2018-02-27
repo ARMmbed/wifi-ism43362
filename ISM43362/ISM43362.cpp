@@ -376,7 +376,6 @@ bool ISM43362::isConnected(void)
 int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
 {
     unsigned cnt = 0, num=0;
-    nsapi_wifi_ap_t ap;
     char *ptr;
     char tmp[256];
 
@@ -387,14 +386,15 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
 
     /* Parse the received buffer and fill AP buffer */
     while (_parser.recv("#%s\n", tmp)) {
+        if (limit != 0 && cnt >= limit) {
+            /* reached end */
+            break;
+        }
+        nsapi_wifi_ap_t ap = {0};
         debug_if(ism_debug,"received:%s", tmp);
         ptr = strtok(tmp, ",");
         num = 0;
         while (ptr != NULL) {
-            if (limit != 0 && cnt >= limit) {
-                /* reached end */
-                break;
-            }
             switch (num++) {
             case 0: /* Ignore index */
             case 4: /* Ignore Max Rate */
@@ -418,8 +418,6 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
                 break;
             case 8:
                 ap.channel = ParseNumber(ptr, NULL);
-                res[cnt] = WiFiAccessPoint(ap);
-                cnt++;
                 num = 1;
                 break;
             default:
@@ -427,6 +425,8 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             }
             ptr = strtok(NULL, ",");
         }
+        res[cnt] = WiFiAccessPoint(ap);
+        cnt++;
     }
 
     /* We may stop before having read all the APs list, so flush the rest of
