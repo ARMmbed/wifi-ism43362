@@ -177,7 +177,7 @@ bool ISM43362::dhcp(bool enabled)
     return (_parser.send("C4=%d", enabled ? 1:0) && check_response());
 }
 
-bool ISM43362::connect(const char *ap, const char *passPhrase, uint32_t ap_sec)
+bool ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
 {
     if (!(_parser.send("C1=%s", ap) && check_response())) {
         return false;
@@ -188,9 +188,11 @@ bool ISM43362::connect(const char *ap, const char *passPhrase, uint32_t ap_sec)
     }
 
     /* Check security level is acceptable */
-    if (ap_sec > 5) {
+    if (ap_sec > ISM_SECURITY_WPA_WPA2 ) {
+        debug_if(ism_debug, "Unsupported security level %d\n", ap_sec);
         return false;
     }
+
     if (!(_parser.send("C3=%d", ap_sec) && check_response())) {
         return false;
     }

@@ -278,7 +278,7 @@ private:
     Mutex _mutex;
     Thread thread_read_socket;
     char ap_ssid[33]; /* 32 is what 802.11 defines as longest possible name; +1 for the \0 */
-    nsapi_security_t ap_sec;
+    ism_security_t ap_sec;
     uint8_t ap_ch;
     char ap_pass[64]; /* The longest allowed passphrase */
 
