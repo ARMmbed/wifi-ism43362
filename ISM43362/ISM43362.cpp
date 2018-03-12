@@ -83,7 +83,8 @@ const char *ISM43362::get_firmware_version(void)
     char tmp_buffer[250];
     char *ptr, *ptr2;
 
-    if(!(_parser.send("I?") && _parser.recv("%s\r\n", tmp_buffer) && check_response())) {
+    /* Use %[^\n] instead of %s to allow having spaces in the string */
+    if(!(_parser.send("I?") && _parser.recv("%[^\n^\r]\r\n", tmp_buffer) && check_response())) {
         debug_if(ism_debug, "get_firmware_version is FAIL\r\n");
         return 0;
     }
@@ -105,18 +106,20 @@ const char *ISM43362::get_firmware_version(void)
 
 bool ISM43362::reset(void)
 {
+    char tmp_buffer[100];
     debug_if(ism_debug,"Reset Module\r\n");
     _resetpin = 0;
     wait_ms(10);
     _resetpin = 1;
     wait_ms(500);
 
-    /*  Wait for prompt line */
-    if (!_parser.recv("> \r\n")) {
+    /* Wait for prompt line : the string is "> ". */
+    /* As the space char is not detected by sscanf function in parser.recv, */
+    /* we need to use %[\n] */
+    if (!_parser.recv(">%[^\n]", tmp_buffer)) {
         debug_if(ism_debug,"Reset Module failed\r\n");
         return false;
     }
-
     return true;
 }
 
@@ -142,15 +145,17 @@ void ISM43362::print_rx_buff(void) {
  *  print error content then flush buffer */
 bool ISM43362::check_response(void)
 {
+    char tmp_buffer[100];
     if(!_parser.recv("OK\r\n")) {
         print_rx_buff();
         _parser.flush();
         return false;
     }
 
-    /*  Then we should get "> ", but sometimes it seems it's missing,
-     *  let's make it optional */
-    if(!_parser.recv("> \r\n")) {
+    /*  Then we should get the prompt: "> " */
+    /* As the space char is not detected by sscanf function in parser.recv, */
+    /* we need to use %[\n] */
+    if (!_parser.recv(">%[^\n]", tmp_buffer)) {
         debug_if(ism_debug, "Missing prompt in WIFI resp\r\n");
         print_rx_buff();
         _parser.flush();
@@ -158,17 +163,17 @@ bool ISM43362::check_response(void)
     }
 
     /*  Inventek module do stuffing / padding of data with 0x15,
-     *  in case buffer containes such */
+     *  in case buffer contains such */
     while(1) {
         int c = _parser.getc();
         if ( c == 0x15) {
+            debug_if(ism_debug, "Flush char 0x%x\n", c);
             continue;
         } else {
             /*  How to put it back if needed ? */
             break;
         }
     }
-
     return true;
 }
 
@@ -210,8 +215,10 @@ const char *ISM43362::getIPAddress(void)
     char tmp_ip_buffer[250];
     char *ptr, *ptr2;
 
+    /* Use %[^\n] instead of %s to allow having spaces in the string */
     if(!(_parser.send("C?")
-                && _parser.recv("%s\r\n", tmp_ip_buffer) && check_response())) {
+         && _parser.recv("%[^\n^\r]\r\n", tmp_ip_buffer) 
+         && check_response())) {
         debug_if(ism_debug,"getIPAddress LINE KO: %s", tmp_ip_buffer);
         return 0;
     }
@@ -249,8 +256,8 @@ const char *ISM43362::getMACAddress(void)
 const char *ISM43362::getGateway()
 {
     char tmp[250];
-
-    if(!(_parser.send("C?") && _parser.recv("%s\r\n", tmp) && check_response())) {
+    /* Use %[^\n] instead of %s to allow having spaces in the string */
+    if(!(_parser.send("C?") && _parser.recv("%[^\n^\r]\r\n", tmp) && check_response())) {
         debug_if(ism_debug,"getGateway LINE KO: %s\r\n", tmp);
         return 0;
     }
@@ -273,8 +280,8 @@ const char *ISM43362::getGateway()
 const char *ISM43362::getNetmask()
 {
     char tmp[250];
-
-    if(!(_parser.send("C?") && _parser.recv("%s\r\n", tmp) && check_response())) {
+    /* Use %[^\n] instead of %s to allow having spaces in the string */
+    if(!(_parser.send("C?") && _parser.recv("%[^\n^\r]\r\n", tmp) && check_response())) {
         debug_if(ism_debug,"getNetmask LINE KO: %s", tmp);
         return 0;
     }
@@ -385,7 +392,8 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     }
 
     /* Parse the received buffer and fill AP buffer */
-    while (_parser.recv("#%s\n", tmp)) {
+    /* Use %[^\n] instead of %s to allow having spaces in the string */
+    while (_parser.recv("#%[^\n]\n", tmp)) {
         if (limit != 0 && cnt >= limit) {
             /* reached end */
             break;
