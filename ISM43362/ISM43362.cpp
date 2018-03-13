@@ -322,6 +322,7 @@ extern "C" nsapi_security_t ParseSecurity(char* ptr)
   else if(strstr(ptr,"WPA2 AES")) return NSAPI_SECURITY_WPA2; 
   else if(strstr(ptr,"WPA WPA2")) return NSAPI_SECURITY_WPA_WPA2; 
   else if(strstr(ptr,"WPA2 TKIP")) return NSAPI_SECURITY_UNKNOWN; // no match in mbed
+  else if(strstr(ptr,"WPA2")) return NSAPI_SECURITY_WPA2; // catch any other WPA2 formula
   else if(strstr(ptr,"WPA")) return NSAPI_SECURITY_WPA;
   else return NSAPI_SECURITY_UNKNOWN;
 }
