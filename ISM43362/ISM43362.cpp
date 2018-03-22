@@ -177,7 +177,7 @@ bool ISM43362::dhcp(bool enabled)
     return (_parser.send("C4=%d", enabled ? 1:0) && check_response());
 }
 
-bool ISM43362::connect(const char *ap, const char *passPhrase)
+bool ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
 {
     if (!(_parser.send("C1=%s", ap) && check_response())) {
         return false;
@@ -186,8 +186,14 @@ bool ISM43362::connect(const char *ap, const char *passPhrase)
     if (!(_parser.send("C2=%s", passPhrase) && check_response())) {
         return false;
     }
-    /* TODO security level = 3 , is it hardcoded or not ???? */
-    if (!(_parser.send("C3=3") && check_response())) {
+
+    /* Check security level is acceptable */
+    if (ap_sec > ISM_SECURITY_WPA_WPA2 ) {
+        debug_if(ism_debug, "Unsupported security level %d\n", ap_sec);
+        return false;
+    }
+
+    if (!(_parser.send("C3=%d", ap_sec) && check_response())) {
         return false;
     }
     /* now connect */

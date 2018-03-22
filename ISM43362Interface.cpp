@@ -85,7 +85,7 @@ int ISM43362Interface::connect()
 
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
 
-    if (!_ism.connect(ap_ssid, ap_pass)) {
+    if (!_ism.connect(ap_ssid, ap_pass, ap_sec)) {
         return NSAPI_ERROR_NO_CONNECTION;
     }
 
@@ -136,7 +136,26 @@ int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi
     memset(ap_pass, 0, sizeof(ap_pass));
     strncpy(ap_pass, pass, sizeof(ap_pass));
 
-    ap_sec = security;
+    switch(security) {
+        case NSAPI_SECURITY_NONE:
+            ap_sec = ISM_SECURITY_NONE;
+            break;
+        case NSAPI_SECURITY_WEP:
+            ap_sec = ISM_SECURITY_WEP;
+            break;
+        case NSAPI_SECURITY_WPA:
+            ap_sec = ISM_SECURITY_WPA;
+            break;
+        case NSAPI_SECURITY_WPA2:
+            ap_sec = ISM_SECURITY_WPA2;
+            break;
+        case NSAPI_SECURITY_WPA_WPA2:
+            ap_sec = ISM_SECURITY_WPA_WPA2;
+            break;
+        default:
+            ap_sec = ISM_SECURITY_UNKNOWN;
+            break;
+    }
     _mutex.unlock();
 
     return 0;

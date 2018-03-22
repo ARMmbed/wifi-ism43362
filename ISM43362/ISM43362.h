@@ -28,10 +28,18 @@
 #define ES_WIFI_RTOS_REV_SIZE                       16
 
 // The input range for AT Command 'R1' is 0 to 1200 bytes
-// ‘R1’ Set Read Transport Packet Size (bytes)
+// 'R1' Set Read Transport Packet Size (bytes)
 #define ES_WIFI_MAX_RX_PACKET_SIZE                     1200
 // Module maxume DATA payload for Tx packet is 1460
 #define ES_WIFI_MAX_TX_PACKET_SIZE                     1460
+typedef enum ism_security {
+    ISM_SECURITY_NONE         = 0x0,      /*!< open access point */
+    ISM_SECURITY_WEP          = 0x1,      /*!< phrase conforms to WEP */
+    ISM_SECURITY_WPA          = 0x2,      /*!< phrase conforms to WPA */
+    ISM_SECURITY_WPA2         = 0x3,      /*!< phrase conforms to WPA2 */
+    ISM_SECURITY_WPA_WPA2     = 0x4,      /*!< phrase conforms to WPA/WPA2 */
+    ISM_SECURITY_UNKNOWN      = 0xFF,     /*!< unknown/unsupported security in scan results */
+} ism_security_t;
 
 /** ISM43362Interface class.
     This is an interface to a ISM43362 radio.
@@ -68,9 +76,10 @@ public:
     *
     * @param ap the name of the AP
     * @param passPhrase the password of AP
+    * @param ap_sec the security level of network AP
     * @return true only if ISM43362 is connected successfully
     */
-    bool connect(const char *ap, const char *passPhrase);
+    bool connect(const char *ap, const char *passPhrase, ism_security_t ap_sec);
 
     /**
     * Disconnect ISM43362 from AP
