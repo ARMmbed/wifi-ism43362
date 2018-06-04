@@ -1,0 +1,33 @@
+{
+    "name": "ism43362",
+    "config": {
+        "wifi-miso": {
+            "help": "SPI-MISO connection to external device",
+            "value": "NC"
+        },
+        "wifi-mosi": {
+            "help": "SPI-MOSI connection to external device",
+            "value": "NC"
+        },
+        "wifi-sclk": {
+            "help": "SPI-CLOCK connection to external device",
+            "value": "NC"
+        },
+        "wifi-nss": {
+            "help": "SPI chip select of external device",
+            "value": "NC"
+        },
+        "wifi-reset": {
+            "help": "ISM43362 reset",
+            "value": "NC"
+        },
+        "wifi-dataready": {
+            "help": "ISM43362 dataready",
+            "value": "NC"
+        },
+        "wifi-wakeup": {
+            "help": "ISM43362 wakeup",
+            "value": "NC"
+        }
+    }
+}

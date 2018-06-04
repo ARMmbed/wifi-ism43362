@@ -30,13 +30,9 @@ class ISM43362Interface : public NetworkStack, public WiFiInterface
 {
 public:
     /** ISM43362Interface lifetime
-     * @param mosi       MOSI pin
-     * @param miso       MISO pin
-     * @param clk        CLOCK pin
-     * @param nss        NSS pin
      * @param debug     Enable debugging
      */
-    ISM43362Interface(PinName mosi, PinName miso, PinName clk, PinName nss, PinName reset, PinName dataready, PinName wakeup, bool debug = false);
+    ISM43362Interface(bool debug = false);
 
     /** Start the interface
      *
@@ -134,7 +130,6 @@ public:
      *
      * @param  ap       Pointer to allocated array to store discovered AP
      * @param  count    Size of allocated @a res array, or 0 to only count available AP
-     * @param  timeout  Timeout in milliseconds; 0 for no timeout (Default: 0)
      * @return          Number of entries in @a, or if @a count was 0 number of available networks, negative on error
      *                  see @a nsapi_error
      */

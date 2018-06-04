@@ -37,8 +37,8 @@ const char supported_fw_versions[2][15] = {"C3.5.2.3.BETA9", "C3.5.2.2"};
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 // ISM43362Interface implementation
-ISM43362Interface::ISM43362Interface(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName reset, PinName datareadypin, PinName wakeup, bool debug)
-    : _ism(mosi, miso, sclk, nss, reset, datareadypin, wakeup, debug)
+ISM43362Interface::ISM43362Interface(bool debug)
+    : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug)
 {
     memset(_ids, 0, sizeof(_ids));
     memset(_socket_obj, 0, sizeof(_socket_obj));
