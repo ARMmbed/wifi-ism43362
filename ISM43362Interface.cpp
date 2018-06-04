@@ -69,6 +69,7 @@ int ISM43362Interface::connect()
 
     if (!read_version) {
         debug_if(ism_debug, "ISM43362: ERROR cannot read firmware version\r\n");
+        _mutex.unlock();
         return NSAPI_ERROR_DEVICE_ERROR;
     }
     debug_if(ism_debug, "ISM43362: read_version = [%s]\r\n", read_version);
@@ -80,17 +81,20 @@ int ISM43362Interface::connect()
     }
 
     if (!_ism.dhcp(true)) {
+        _mutex.unlock();
         return NSAPI_ERROR_DHCP_FAILURE;
     }
 
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
 
     if (!_ism.connect(ap_ssid, ap_pass, ap_sec)) {
+        _mutex.unlock();
         return NSAPI_ERROR_NO_CONNECTION;
     }
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
     if (!_ism.getIPAddress()) {
+        _mutex.unlock();
         return NSAPI_ERROR_DHCP_FAILURE;
     }
 
@@ -105,9 +109,11 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
     _mutex.lock();
     if (address->set_ip_address(name)) {
         if (version != NSAPI_UNSPEC && address->get_ip_version() != version) {
+            _mutex.unlock();
             return NSAPI_ERROR_DNS_FAILURE;
         }
 
+        _mutex.unlock();
         return NSAPI_ERROR_OK;
     }
 
@@ -129,7 +135,6 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi_security_t security)
 {
     _mutex.lock();
-
     memset(ap_ssid, 0, sizeof(ap_ssid));
     strncpy(ap_ssid, ssid, sizeof(ap_ssid));
 
@@ -173,6 +178,7 @@ int ISM43362Interface::disconnect()
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
     if (!_ism.disconnect()) {
+        _mutex.unlock();
         return NSAPI_ERROR_DEVICE_ERROR;
     }
 
@@ -257,6 +263,7 @@ int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
     _mutex.lock();
     struct ISM43362_socket *socket = new struct ISM43362_socket;
     if (!socket) {
+        _mutex.unlock();
         return NSAPI_ERROR_NO_SOCKET;
     }
     socket->id = id;
