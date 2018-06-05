@@ -244,6 +244,7 @@ private:
         // data follows
     } *_packets, **_packets_end;
     void _packet_handler();
+    bool _ism_debug;
 
     char _ip_buffer[16];
     char _gateway_buffer[16];
