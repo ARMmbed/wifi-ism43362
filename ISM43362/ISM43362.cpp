@@ -1,6 +1,6 @@
 /* ISM43362 Example
 *
-* Copyright (c) STMicroelectronics 2017
+* Copyright (c) STMicroelectronics 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,33 +185,44 @@ bool ISM43362::dhcp(bool enabled)
     return (_parser.send("C4=%d", enabled ? 1:0) && check_response());
 }
 
-bool ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
+int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
 {
+    char tmp[256];
+
     if (!(_parser.send("C1=%s", ap) && check_response())) {
-        return false;
+        return NSAPI_ERROR_PARAMETER;
     }
 
     if (!(_parser.send("C2=%s", passPhrase) && check_response())) {
-        return false;
+        return NSAPI_ERROR_PARAMETER;
     }
 
     /* Check security level is acceptable */
     if (ap_sec > ISM_SECURITY_WPA_WPA2 ) {
         debug_if(_ism_debug, "ISM43362: Unsupported security level %d\n", ap_sec);
-        return false;
+        return NSAPI_ERROR_UNSUPPORTED;
     }
 
     if (!(_parser.send("C3=%d", ap_sec) && check_response())) {
-        return false;
-    }
-    /* now connect */
-    /* connect response contains more data that we don't need now,
-     * So we only look for OK, the flush the end of it */
-    if (!(_parser.send("C0") && check_response())) {
-        return false;
+        return NSAPI_ERROR_PARAMETER;
     }
 
-    return true;
+    if(_parser.send("C0")) {
+        while (_parser.recv("%[^\n]\n", tmp)) {
+            if(strstr(tmp, "OK")) {
+                _parser.flush();
+                return NSAPI_ERROR_OK;
+                }
+            if(strstr(tmp, "JOIN")) {
+                if(strstr(tmp, "Failed")) {
+                    _parser.flush();
+                    return NSAPI_ERROR_AUTH_FAILURE;
+                }
+            }
+        }
+    }
+
+    return NSAPI_ERROR_NO_CONNECTION;
 }
 
 bool ISM43362::disconnect(void)
