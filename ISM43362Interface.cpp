@@ -18,7 +18,7 @@
 #include "ISM43362Interface.h"
 #include "mbed_debug.h"
 
-// ao activate  / de-activate debug
+// activate / de-activate debug
 #define ism_debug false
 
 // Various timeouts for different ISM43362 operations
@@ -40,6 +40,7 @@ const char supported_fw_versions[2][15] = {"C3.5.2.3.BETA9", "C3.5.2.2"};
 ISM43362Interface::ISM43362Interface(bool debug)
     : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug)
 {
+    _ism_debug = ism_debug || debug;
     memset(_ids, 0, sizeof(_ids));
     memset(_socket_obj, 0, sizeof(_socket_obj));
     memset(_cbs, 0, sizeof(_cbs));
@@ -68,16 +69,16 @@ int ISM43362Interface::connect()
     read_version = _ism.get_firmware_version();
 
     if (!read_version) {
-        debug_if(ism_debug, "ISM43362: ERROR cannot read firmware version\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: ERROR cannot read firmware version\r\n");
         _mutex.unlock();
         return NSAPI_ERROR_DEVICE_ERROR;
     }
-    debug_if(ism_debug, "ISM43362: read_version = [%s]\r\n", read_version);
+    debug_if(_ism_debug, "ISM43362Interface: read_version = [%s]\r\n", read_version);
 
     if ((strcmp(read_version, supported_fw_versions[0]) == 0) || (strcmp(read_version, supported_fw_versions[1]) == 0)) {
-        debug_if(ism_debug, "ISM43362: firmware version is OK\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: firmware version is OK\r\n");
     } else {
-        debug_if(ism_debug, "ISM43362: WARNING this firmware version has not been tested !\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: WARNING this firmware version has not been tested !\r\n");
     }
 
     if (!_ism.dhcp(true)) {
@@ -88,6 +89,7 @@ int ISM43362Interface::connect()
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
 
     if (!_ism.connect(ap_ssid, ap_pass, ap_sec)) {
+//        debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", connect_status);
         _mutex.unlock();
         return NSAPI_ERROR_NO_CONNECTION;
     }
@@ -267,7 +269,7 @@ int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
         return NSAPI_ERROR_NO_SOCKET;
     }
     socket->id = id;
-    debug_if(ism_debug, "socket_open, id=%d", socket->id);
+    debug_if(_ism_debug, "ISM43362Interface: socket_open, id=%d\n", socket->id);
     memset(socket->read_data, 0, sizeof(socket->read_data));
     socket->addr = 0;
     socket->read_data_size = 0;
@@ -283,7 +285,7 @@ int ISM43362Interface::socket_close(void *handle)
 {
     _mutex.lock();
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
-    debug_if(ism_debug, "socket_close, id=%d", socket->id);
+    debug_if(_ism_debug, "ISM43362Interface: socket_close, id=%d\n", socket->id);
     int err = 0;
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
  
@@ -391,7 +393,7 @@ int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsign
     }
 
     if (!_ism.send(socket->id, data, size)) {
-        debug_if(ism_debug, "socket_send ERROR\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: socket_send ERROR\r\n");
         return NSAPI_ERROR_DEVICE_ERROR; // or WOULD_BLOCK ?
     }
 
@@ -405,7 +407,7 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
     char *ptr = (char *)data;
 
-    debug_if(ism_debug, "[socket_recv] req=%d\r\n", size);
+    debug_if(_ism_debug, "ISM43362Interface: [socket_recv] req=%d\r\n", size);
 
     if (!socket->connected) {
         _mutex.unlock();
@@ -427,21 +429,21 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
     }
 
     if (socket->read_data_size != 0) {
-        debug_if(ism_debug, "read_data_size=%d\r\n", socket->read_data_size);
+        debug_if(_ism_debug, "ISM43362Interface: read_data_size=%d\r\n", socket->read_data_size);
         uint32_t i=0;
         while ((i < socket->read_data_size) && (i < size)) {
             *ptr++ = socket->read_data[i];
             i++;
         }
 
-        debug_if(ism_debug, "Copied i bytes=%d, vs %d requestd\r\n", i, size);
+        debug_if(_ism_debug, "ISM43362Interface: Copied i bytes=%d, vs %d requestd\r\n", i, size);
         recv += i;
 
         if (i >= socket->read_data_size) {
             /* All the storeed data has been read, reset buffer */
             memset(socket->read_data, 0, sizeof(socket->read_data));
             socket->read_data_size = 0;
-            debug_if(ism_debug, "Socket_recv buffer reset\r\n");
+            debug_if(_ism_debug, "ISM43362Interface: Socket_recv buffer reset\r\n");
         } else {
             /*  In case there is remaining data in buffer, update socket content
              *  For now by shift copy of all data (not very efficient to be
@@ -454,16 +456,16 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
             socket->read_data_size -= size;
         }
     } else {
-        debug_if(ism_debug, "Nothing in buffer\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: Nothing in buffer\r\n");
     }
 
-    debug_if(ism_debug, "[socket_recv]read_datasize=%d, recv=%d\r\n", socket->read_data_size, recv);
+    debug_if(_ism_debug, "ISM43362Interface: [socket_recv]read_datasize=%d, recv=%d\r\n", socket->read_data_size, recv);
     _mutex.unlock();
 
     if (recv > 0) {
         return recv;
     } else {
-        debug_if(ism_debug, "sock_recv returns WOULD BLOCK\r\n");
+        debug_if(_ism_debug, "ISM43362Interface: sock_recv returns WOULD BLOCK\r\n");
         return NSAPI_ERROR_WOULD_BLOCK;
     }
 }
@@ -476,7 +478,7 @@ int ISM43362Interface::socket_sendto(void *handle, const SocketAddress &addr, co
     if (socket->connected && socket->addr != addr) {
         _ism.setTimeout(ISM43362_MISC_TIMEOUT);
         if (!_ism.close(socket->id)) {
-            debug_if(ism_debug, "socket_send ERROR\r\n");
+            debug_if(_ism_debug, "ISM43362Interface: socket_send ERROR\r\n");
             _mutex.unlock();
             return NSAPI_ERROR_DEVICE_ERROR;
         }

@@ -277,6 +277,8 @@ private:
     uint8_t ap_ch;
     char ap_pass[64]; /* The longest allowed passphrase */
 
+    bool _ism_debug;
+
     void event();
     struct {
         void (*callback)(void *);
