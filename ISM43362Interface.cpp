@@ -1,5 +1,5 @@
 /* ISM43362 implementation of NetworkInterfaceAPI
- * Copyright (c) STMicroelectronics 2017
+ * Copyright (c) STMicroelectronics 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #define ism_debug false
 
 // Various timeouts for different ISM43362 operations
-#define ISM43362_CONNECT_TIMEOUT 15000 /* milliseconds */
+#define ISM43362_CONNECT_TIMEOUT 50000 /* milliseconds */
 #define ISM43362_SEND_TIMEOUT    1000   /* milliseconds */
 #define ISM43362_RECV_TIMEOUT    100   /* milliseconds */
 #define ISM43362_MISC_TIMEOUT    100   /* milliseconds */
@@ -87,11 +87,12 @@ int ISM43362Interface::connect()
     }
 
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
+    int connect_status = _ism.connect(ap_ssid, ap_pass, ap_sec);
+    debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", connect_status);
 
-    if (!_ism.connect(ap_ssid, ap_pass, ap_sec)) {
-//        debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", connect_status);
+    if (connect_status != NSAPI_ERROR_OK) {
         _mutex.unlock();
-        return NSAPI_ERROR_NO_CONNECTION;
+        return connect_status;
     }
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);

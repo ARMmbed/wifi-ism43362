@@ -77,9 +77,9 @@ public:
     * @param ap the name of the AP
     * @param passPhrase the password of AP
     * @param ap_sec the security level of network AP
-    * @return true only if ISM43362 is connected successfully
+    * @return nsapi_error enum
     */
-    bool connect(const char *ap, const char *passPhrase, ism_security_t ap_sec);
+    int connect(const char *ap, const char *passPhrase, ism_security_t ap_sec);
 
     /**
     * Disconnect ISM43362 from AP
