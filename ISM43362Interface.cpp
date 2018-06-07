@@ -44,6 +44,10 @@ ISM43362Interface::ISM43362Interface(bool debug)
     memset(_ids, 0, sizeof(_ids));
     memset(_socket_obj, 0, sizeof(_socket_obj));
     memset(_cbs, 0, sizeof(_cbs));
+    memset(ap_ssid, 0, sizeof(ap_ssid));
+    memset(ap_pass, 0, sizeof(ap_pass));
+    ap_sec = ISM_SECURITY_UNKNOWN;
+
     thread_read_socket.start(callback(this, &ISM43362Interface::socket_check_read));
 }
 
@@ -54,12 +58,20 @@ int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_securit
         return NSAPI_ERROR_UNSUPPORTED;
     }
 
-    set_credentials(ssid, pass, security);
-    return connect();
+    nsapi_error_t credentials_status = set_credentials(ssid, pass, security);
+    if (credentials_status) {
+        return credentials_status;
+    }
+
+        return connect();
 }
 
 int ISM43362Interface::connect()
 {
+    if (strlen(ap_ssid) == 0) {
+        return NSAPI_ERROR_NO_SSID;
+    }
+
     _mutex.lock();
     const char* read_version;
 
@@ -101,7 +113,6 @@ int ISM43362Interface::connect()
         return NSAPI_ERROR_DHCP_FAILURE;
     }
 
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
     _mutex.unlock();
 
     return NSAPI_ERROR_OK;
@@ -137,6 +148,18 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
 int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi_security_t security)
 {
+    if ( (strlen(ssid) == 0) || (strlen(ssid) > 32) ) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+
+    if ( (security != NSAPI_SECURITY_NONE) && (strcmp(pass, "") == 0)) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+
+    if (strlen(pass) > 63) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+
     _mutex.lock();
     memset(ap_ssid, 0, sizeof(ap_ssid));
     strncpy(ap_ssid, ssid, sizeof(ap_ssid));
@@ -166,7 +189,7 @@ int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi
     }
     _mutex.unlock();
 
-    return 0;
+    return NSAPI_ERROR_OK;
 }
 
 int ISM43362Interface::set_channel(uint8_t channel)
