@@ -49,6 +49,27 @@ ISM43362Interface::ISM43362Interface(bool debug)
     ap_sec = ISM_SECURITY_UNKNOWN;
 
     thread_read_socket.start(callback(this, &ISM43362Interface::socket_check_read));
+
+    _mutex.lock();
+    const char* read_version;
+
+    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
+
+    // Check all supported firmware versions
+    read_version = _ism.get_firmware_version();
+
+    if (!read_version) {
+        error("ISM43362Interface: ERROR cannot read firmware version\r\n");
+    }
+    debug_if(_ism_debug, "ISM43362Interface: read_version = [%s]\r\n", read_version);
+
+    if ((strcmp(read_version, supported_fw_versions[0]) == 0) || (strcmp(read_version, supported_fw_versions[1]) == 0)) {
+        debug_if(_ism_debug, "ISM43362Interface: firmware version is OK\r\n");
+    } else {
+        debug_if(_ism_debug, "ISM43362Interface: WARNING this firmware version has not been tested !\r\n");
+    }
+
+    _mutex.unlock();
 }
 
 int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_security_t security,
@@ -73,25 +94,6 @@ int ISM43362Interface::connect()
     }
 
     _mutex.lock();
-    const char* read_version;
-
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
-
-    // Check all supported firmware versions
-    read_version = _ism.get_firmware_version();
-
-    if (!read_version) {
-        debug_if(_ism_debug, "ISM43362Interface: ERROR cannot read firmware version\r\n");
-        _mutex.unlock();
-        return NSAPI_ERROR_DEVICE_ERROR;
-    }
-    debug_if(_ism_debug, "ISM43362Interface: read_version = [%s]\r\n", read_version);
-
-    if ((strcmp(read_version, supported_fw_versions[0]) == 0) || (strcmp(read_version, supported_fw_versions[1]) == 0)) {
-        debug_if(_ism_debug, "ISM43362Interface: firmware version is OK\r\n");
-    } else {
-        debug_if(_ism_debug, "ISM43362Interface: WARNING this firmware version has not been tested !\r\n");
-    }
 
     if (!_ism.dhcp(true)) {
         _mutex.unlock();
