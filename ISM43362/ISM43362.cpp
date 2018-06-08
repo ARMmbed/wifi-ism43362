@@ -454,7 +454,9 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             }
             ptr = strtok(NULL, ",");
         }
-        res[cnt] = WiFiAccessPoint(ap);
+        if (res != NULL) {
+            res[cnt] = WiFiAccessPoint(ap);
+        }
         cnt++;
     }
 
