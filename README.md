@@ -13,12 +13,23 @@ Correct pins have already been configured for both supported platforms.
 Here is configured pins:
 
 - MBED_CONF_ISM43362_WIFI_MISO      : spi-miso pin for the ism43362 connection
-- MBED_CONF_ISM43362_WIFI__MOSI     : spi-mosi pin for the ism43362 connection
+- MBED_CONF_ISM43362_WIFI_MOSI     : spi-mosi pin for the ism43362 connection
 - MBED_CONF_ISM43362_WIFI_SPI_SCLK  : spi-clock pin for the ism43362 connection
 - MBED_CONF_ISM43362_WIFI_SPI_NSS   : spi-nss pin for the ism43362 connection
 - MBED_CONF_ISM43362_WIFI_RESET     : Reset pin for the ism43362 wifi module
 - MBED_CONF_ISM43362_WIFI_DATAREADY : Data Ready pin for the ism43362 wifi module
 - MBED_CONF_ISM43362_WIFI_WAKEUP    : Wakeup pin for the ism43362 wifi module
+
+## Debug
+
+Some debug print on console can help to debug if necessary.
+
+- in ISM43362Interface.cpp file, set ism_interface_debug to 1
+- in ISM43362/ISM43362.cpp file, set ism_debug to 1
+- in ISM43362/ATParser/ATParser.cpp file, there are 3 different level : dbg_on / AT_DATA_PRINT / AT_COMMAND_PRINT
+
+Another way to enable these prints is overwrite MBED_CONF_ISM43362_WIFI_DEBUG in your json file:
+            "ism43362.wifi-debug": true
 
 
 ## Firmware version

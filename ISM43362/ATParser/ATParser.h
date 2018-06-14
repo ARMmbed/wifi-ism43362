@@ -57,7 +57,6 @@ private:
     const char *_delimiter;
     int _delim_size;
     char _in_prev;
-    bool dbg_on;
     volatile bool _aborted;
 
     struct oob {
@@ -77,15 +76,7 @@ public:
     * @param timeout timeout of the connection
     * @param delimiter string of characters to use as line delimiters
     */
-    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = 8000, bool debug = false) :
-        _serial_spi(&serial_spi),
-        _buffer_size(buffer_size), _in_prev(0), _oobs(NULL)
-    {
-        _buffer = new char[buffer_size];
-        setTimeout(timeout);
-        setDelimiter(delimiter);
-        debugOn(debug);
-    }
+    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = 60000);
 
     /**
     * Destructor
@@ -120,16 +111,6 @@ public:
     {
         _delimiter = delimiter;
         _delim_size = strlen(delimiter);
-    }
-
-    /**
-    * Allows echo to be on or off
-    *
-    * @param echo 1 for echo and 0 turns it off
-    */
-    void debugOn(uint8_t on)
-    {
-        dbg_on = (on) ? 1 : 0;
     }
 
     /**
