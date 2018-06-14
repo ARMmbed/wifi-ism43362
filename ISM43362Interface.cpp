@@ -51,7 +51,7 @@ ISM43362Interface::ISM43362Interface(bool debug)
     thread_read_socket.start(callback(this, &ISM43362Interface::socket_check_read));
 
     _mutex.lock();
-    const char* read_version;
+    const char *read_version;
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
@@ -73,7 +73,7 @@ ISM43362Interface::ISM43362Interface(bool debug)
 }
 
 int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_security_t security,
-                                        uint8_t channel)
+                               uint8_t channel)
 {
     if (channel != 0) {
         return NSAPI_ERROR_UNSUPPORTED;
@@ -84,7 +84,7 @@ int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_securit
         return credentials_status;
     }
 
-        return connect();
+    return connect();
 }
 
 int ISM43362Interface::connect()
@@ -136,7 +136,7 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
     char *ipbuff = new char[NSAPI_IP_SIZE];
     int ret = 0;
     _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
-    if(!_ism.dns_lookup(name, ipbuff)) {
+    if (!_ism.dns_lookup(name, ipbuff)) {
         ret = NSAPI_ERROR_DEVICE_ERROR;
     } else {
         address->set_ip_address(ipbuff);
@@ -150,11 +150,11 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
 int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi_security_t security)
 {
-    if ( (strlen(ssid) == 0) || (strlen(ssid) > 32) ) {
+    if ((strlen(ssid) == 0) || (strlen(ssid) > 32)) {
         return NSAPI_ERROR_PARAMETER;
     }
 
-    if ( (security != NSAPI_SECURITY_NONE) && (strcmp(pass, "") == 0)) {
+    if ((security != NSAPI_SECURITY_NONE) && (strcmp(pass, "") == 0)) {
         return NSAPI_ERROR_PARAMETER;
     }
 
@@ -169,7 +169,7 @@ int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi
     memset(ap_pass, 0, sizeof(ap_pass));
     strncpy(ap_pass, pass, sizeof(ap_pass));
 
-    switch(security) {
+    switch (security) {
         case NSAPI_SECURITY_NONE:
             ap_sec = ISM_SECURITY_NONE;
             break;
@@ -314,7 +314,7 @@ int ISM43362Interface::socket_close(void *handle)
     debug_if(_ism_debug, "ISM43362Interface: socket_close, id=%d\n", socket->id);
     int err = 0;
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
- 
+
     if (!_ism.close(socket->id)) {
         err = NSAPI_ERROR_DEVICE_ERROR;
     }
@@ -385,7 +385,7 @@ void ISM43362Interface::socket_check_read()
                         /* There is something to read in this socket*/
                         if (_cbs[socket->id].callback) {
                             _cbs[socket->id].callback(_cbs[socket->id].data);
-                       }
+                        }
                     }
                 }
             }
@@ -456,7 +456,7 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
 
     if (socket->read_data_size != 0) {
         debug_if(_ism_debug, "ISM43362Interface: read_data_size=%d\r\n", socket->read_data_size);
-        uint32_t i=0;
+        uint32_t i = 0;
         while ((i < socket->read_data_size) && (i < size)) {
             *ptr++ = socket->read_data[i];
             i++;
@@ -550,7 +550,8 @@ void ISM43362Interface::socket_attach(void *handle, void (*cb)(void *), void *da
     _mutex.unlock();
 }
 
-void ISM43362Interface::event() {
+void ISM43362Interface::event()
+{
     for (int i = 0; i < ISM43362_SOCKET_COUNT; i++) {
         if (_cbs[i].callback) {
             _cbs[i].callback(_cbs[i].data);

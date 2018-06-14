@@ -64,7 +64,7 @@ int ATParser::write(const char *data, int size_of_data, int size_in_buff)
 {
     int i = 0;
     _bufferMutex.lock();
-    for ( ; i < size_of_data; i++) {
+    for (; i < size_of_data; i++) {
         if (putc(data[i]) < 0) {
             _bufferMutex.unlock();
             return -1;
@@ -84,7 +84,7 @@ int ATParser::read(char *data)
     _bufferMutex.lock();
 
     //this->flush();
-    if(!_serial_spi->readable()) {
+    if (!_serial_spi->readable()) {
         readsize = _serial_spi->read();
     } else {
         error("Pending data when reading from WIFI\r\n");
@@ -93,24 +93,24 @@ int ATParser::read(char *data)
 
     debug_if(dbg_on, "Avail in SPI %d\r\n", readsize);
 
-    if ( readsize < 0) {
+    if (readsize < 0) {
         _bufferMutex.unlock();
         return -1;
     }
 
     for (i = 0 ; i < readsize; i++) {
-       int c = getc();
-       if (c < 0) {
-           _bufferMutex.unlock();
-           return -1;
-       }
-       data[i] = c;
+        int c = getc();
+        if (c < 0) {
+            _bufferMutex.unlock();
+            return -1;
+        }
+        data[i] = c;
     }
 
 #if TRACE_AT_DATA
     debug_if(dbg_on, "AT<< %d BYTES\r\n", readsize);
     for (i = 0; i < readsize; i++) {
-         debug_if(dbg_on, "%2X ", data[i]);
+        debug_if(dbg_on, "%2X ", data[i]);
     }
     debug_if(dbg_on, "\r\n");
 #endif
@@ -130,7 +130,7 @@ int ATParser::vprintf(const char *format, va_list args)
     }
 
     int i = 0;
-    for ( ; _buffer[i]; i++) {
+    for (; _buffer[i]; i++) {
         if (putc(_buffer[i]) < 0) {
             _bufferMutex.unlock();
             return -1;
@@ -153,7 +153,7 @@ int ATParser::vscanf(const char *format, va_list args)
     _bufferMutex.lock();
 
     while (format[i]) {
-        if (format[i] == '%' && format[i+1] != '%' && format[i+1] != '*') {
+        if (format[i] == '%' && format[i + 1] != '%' && format[i + 1] != '*') {
             _buffer[offset++] = '%';
             _buffer[offset++] = '*';
             i++;
@@ -180,7 +180,7 @@ int ATParser::vscanf(const char *format, va_list args)
 
     while (true) {
         // Ran out of space
-        if (j+1 >= _buffer_size - offset) {
+        if (j + 1 >= _buffer_size - offset) {
             _bufferMutex.unlock();
             return false;
         }
@@ -195,12 +195,12 @@ int ATParser::vscanf(const char *format, va_list args)
 
         // Check for match
         int count = -1;
-        sscanf(_buffer+offset, _buffer, &count);
+        sscanf(_buffer + offset, _buffer, &count);
 
         // We only succeed if all characters in the response are matched
         if (count == j) {
             // Store the found results
-            vsscanf(_buffer+offset, format, args);
+            vsscanf(_buffer + offset, format, args);
             _bufferMutex.unlock();
             return j;
         }
@@ -211,7 +211,7 @@ int ATParser::vscanf(const char *format, va_list args)
 // Command parsing with line handling
 bool ATParser::vsend(const char *command, va_list args)
 {
-    int i=0, j=0;
+    int i = 0, j = 0;
     _bufferMutex.lock();
     // Create and send command
     if (vsprintf(_buffer, command, args) < 0) {
@@ -222,12 +222,12 @@ bool ATParser::vsend(const char *command, va_list args)
     for (i = 0; _buffer[i]; i++) {
     }
 
-    for (j=0; _delimiter[j]; j++) {
-        _buffer[i+j] = _delimiter[j];
+    for (j = 0; _delimiter[j]; j++) {
+        _buffer[i + j] = _delimiter[j];
     }
-    _buffer[i+j]=0; // only to get a clean debug log
-    
-    bool ret = !(_serial_spi->buffwrite(_buffer, i+j) < 0);
+    _buffer[i + j] = 0; // only to get a clean debug log
+
+    bool ret = !(_serial_spi->buffwrite(_buffer, i + j) < 0);
 
     debug_if(dbg_on, "AT> %s\n", _buffer);
     _bufferMutex.unlock();
@@ -239,13 +239,13 @@ bool ATParser::vrecv(const char *response, va_list args)
     _bufferMutex.lock();
     /* Read from the wifi module, fill _rxbuffer */
     //this->flush();
-    if(!_serial_spi->readable()) {
-         debug_if(dbg_on, "NO DATA, read again\r\n");
+    if (!_serial_spi->readable()) {
+        debug_if(dbg_on, "NO DATA, read again\r\n");
         if (_serial_spi->read() < 0) {
             return false;
         }
     } else {
-         debug_if(dbg_on, "Pending data\r\n");
+        debug_if(dbg_on, "Pending data\r\n");
     }
 restart:
     _aborted = false;
@@ -260,14 +260,14 @@ restart:
         bool whole_line_wanted = false;
 
         while (response[i]) {
-            if (response[i] == '%' && response[i+1] != '%' && response[i+1] != '*') {
+            if (response[i] == '%' && response[i + 1] != '%' && response[i + 1] != '*') {
                 _buffer[offset++] = '%';
                 _buffer[offset++] = '*';
                 i++;
             } else {
                 _buffer[offset++] = response[i++];
                 // Find linebreaks, taking care not to be fooled if they're in a %[^\n] conversion specification
-                if (response[i - 1] == '\n' && !(i >= 3 && response[i-3] == '[' && response[i-2] == '^')) {
+                if (response[i - 1] == '\n' && !(i >= 3 && response[i - 3] == '[' && response[i - 2] == '^')) {
                     whole_line_wanted = true;
                     break;
                 }
@@ -301,7 +301,7 @@ restart:
             }
 
 #if TRACE_AT_DATA
-             debug_if(dbg_on, "%2X ", c);
+            debug_if(dbg_on, "%2X ", c);
 #endif
             _buffer[offset + j++] = c;
             _buffer[offset + j] = 0;
@@ -309,7 +309,7 @@ restart:
             // Check for oob data
             for (struct oob *oob = _oobs; oob; oob = oob->next) {
                 if ((unsigned)j == oob->len && memcmp(
-                        oob->prefix, _buffer+offset, oob->len) == 0) {
+                            oob->prefix, _buffer + offset, oob->len) == 0) {
                     debug_if(dbg_on, "AT! %s\n", oob->prefix);
                     oob->cb();
 
@@ -331,7 +331,7 @@ restart:
                 // This allows recv("Foo: %s\n") to work, and not match with just the first character of a string
                 // (scanf does not itself match whitespace in its format string, so \n is not significant to it)
             } else {
-                sscanf(_buffer+offset, _buffer, &count);
+                sscanf(_buffer + offset, _buffer, &count);
             }
 
             // We only succeed if all characters in the response are matched
@@ -342,7 +342,7 @@ restart:
                 _buffer[i] = 0;
 
                 // Store the found results
-                vsscanf(_buffer+offset, _buffer, args);
+                vsscanf(_buffer + offset, _buffer, args);
 
                 // Jump to next line and continue parsing
                 response += i;
@@ -351,13 +351,13 @@ restart:
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if ((c == '\n') ) {
-                debug_if(dbg_on, "New line AT<<< %s", _buffer+offset);
+            if ((c == '\n')) {
+                debug_if(dbg_on, "New line AT<<< %s", _buffer + offset);
                 j = 0;
             }
             if ((j + 1 >= (_buffer_size - offset))) {
 
-                debug_if(dbg_on, "Out of space AT<<< %s, j=%d", _buffer+offset, j);
+                debug_if(dbg_on, "Out of space AT<<< %s, j=%d", _buffer + offset, j);
                 j = 0;
             }
         }
