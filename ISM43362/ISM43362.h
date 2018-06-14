@@ -41,6 +41,8 @@ typedef enum ism_security {
     ISM_SECURITY_UNKNOWN      = 0xFF,     /*!< unknown/unsupported security in scan results */
 } ism_security_t;
 
+extern "C" int32_t ParseNumber(char *ptr, uint8_t *cnt);
+
 /** ISM43362Interface class.
     This is an interface to a ISM43362 radio.
  */

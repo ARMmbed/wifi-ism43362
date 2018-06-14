@@ -18,6 +18,9 @@
 #include "ISM43362Interface.h"
 #include "mbed_debug.h"
 
+                                            // Product ID,FW Revision,API Revision,Stack Revision,RTOS Revision,CPU Clock,Product Name
+#define LATEST_FW_VERSION_NUMBER "C3.5.2.5" // ISM43362-M3G-L44-SPI,C3.5.2.5.STM,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi
+
 // activate / de-activate debug
 #define ism_debug false
 
@@ -53,9 +56,15 @@ ISM43362Interface::ISM43362Interface(bool debug)
     if (!_FwVersion) {
         error("ISM43362Interface: ERROR cannot read firmware version\r\n");
     }
+
     debug_if(_ism_debug, "ISM43362Interface: read_version = %lu\r\n", _FwVersion);
+    /* FW Revision should be with format "CX.X.X.X" with X as a single digit */
+    if ( (_FwVersion < 1000) || (_FwVersion > 9999) ) {
+        debug_if(_ism_debug, "ISM43362Interface: read_version issue\r\n");
+    }
+
 #if TARGET_DISCO_L475VG_IOT01A
-    if (_FwVersion < 3525) {
+    if (_FwVersion < ParseNumber(LATEST_FW_VERSION_NUMBER, NULL)) {
         debug_if(_ism_debug, "ISM43362Interface: please update FW\r\n");
     }
 #endif

@@ -61,10 +61,10 @@ extern "C" int32_t ParseNumber(char *ptr, uint8_t *cnt)
         ptr++;
         i++;
     }
-    if (*ptr == 'C') {  /* input string for version is C3.x.x.x */
+    if (*ptr == 'C') {  /* input string from get_firmware_version is Cx.x.x.x */
         ptr++;
-        i++;
     }
+
     while (CHARISNUM(*ptr) || (*ptr == '.')) { /* Parse number */
         if (*ptr == '.') {
             ptr++; // next char
