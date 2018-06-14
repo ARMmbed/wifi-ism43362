@@ -44,18 +44,17 @@ typedef enum ism_security {
 /** ISM43362Interface class.
     This is an interface to a ISM43362 radio.
  */
-class ISM43362
-{
+class ISM43362 {
 public:
-    ISM43362(PinName mosi, PinName miso, PinName clk, PinName nss, PinName resetpin, PinName datareadypin, PinName wakeup, bool debug=false);
-    
+    ISM43362(PinName mosi, PinName miso, PinName clk, PinName nss, PinName resetpin, PinName datareadypin, PinName wakeup, bool debug = false);
+
     /**
     * Check firmware version of ISM43362
     *
     * @return null-terminated fw version or null if no version is read
     */
     const char *get_firmware_version(void);
-    
+
     /**
     * Reset ISM43362
     *
@@ -102,16 +101,16 @@ public:
     */
     const char *getMACAddress(void);
 
-     /** Get the local gateway
-     *
-     *  @return         Null-terminated representation of the local gateway
-     *                  or null if no network mask has been recieved
-     */
+    /** Get the local gateway
+    *
+    *  @return         Null-terminated representation of the local gateway
+    *                  or null if no network mask has been recieved
+    */
     const char *getGateway();
 
     /** Get the local network mask
      *
-     *  @return         Null-terminated representation of the local network mask 
+     *  @return         Null-terminated representation of the local network mask
      *                  or null if no network mask has been recieved
      */
     const char *getNetmask();
@@ -137,7 +136,7 @@ public:
      *               see @a nsapi_error
      */
     int scan(WiFiAccessPoint *res, unsigned limit);
-    
+
     /**Perform a dns query
     *
     * @param name Hostname to resolve
@@ -155,7 +154,7 @@ public:
     * @param addr the IP address of the destination
     * @return true only if socket opened successfully
     */
-    bool open(const char *type, int id, const char* addr, int port);
+    bool open(const char *type, int id, const char *addr, int port);
 
     /**
     * Sends data to an open socket
@@ -217,7 +216,7 @@ public:
     * @return amount of read value, or -1 for errors
     */
     int check_recv_status(int id, void *data);
-    
+
     /**
     * Attach a function to call whenever network state has changed
     *
@@ -225,7 +224,8 @@ public:
     * @param method pointer to the member function to call
     */
     template <typename T, typename M>
-    void attach(T *obj, M method) {
+    void attach(T *obj, M method)
+    {
         attach(Callback<void()>(obj, method));
     }
 
@@ -242,7 +242,7 @@ private:
         int id;
         uint32_t len;
         // data follows
-    } *_packets, **_packets_end;
+    } *_packets, * *_packets_end;
     void _packet_handler();
     bool _ism_debug;
 

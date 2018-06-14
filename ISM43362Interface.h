@@ -26,8 +26,7 @@
 /** ISM43362Interface class
  *  Implementation of the NetworkStack for the ISM43362
  */
-class ISM43362Interface : public NetworkStack, public WiFiInterface
-{
+class ISM43362Interface : public NetworkStack, public WiFiInterface {
 public:
     /** ISM43362Interface lifetime
      * @param debug     Enable debugging
@@ -54,8 +53,8 @@ public:
      *  @return          0 on success, or error code on failure
      */
     virtual int connect(const char *ssid, const char *pass, nsapi_security_t security = NSAPI_SECURITY_NONE,
-                                  uint8_t channel = 0);
-    
+                        uint8_t channel = 0);
+
     /** Translates a hostname to an IP address with specific version
      *
      *  The hostname may be either a domain name or an IP address. If the
@@ -69,7 +68,7 @@ public:
      *  @return         0 on success, negative error code on failure
      */
     virtual nsapi_error_t gethostbyname(const char *name, SocketAddress *address, nsapi_version_t version = NSAPI_UNSPEC);
-    
+
     /** Set the WiFi network credentials
      *
      *  @param ssid      Name of the network to connect to
@@ -104,11 +103,11 @@ public:
      */
     virtual const char *get_mac_address();
 
-     /** Get the local gateway
-     *
-     *  @return         Null-terminated representation of the local gateway
-     *                  or null if no network mask has been recieved
-     */
+    /** Get the local gateway
+    *
+    *  @return         Null-terminated representation of the local gateway
+    *                  or null if no network mask has been recieved
+    */
     virtual const char *get_gateway();
 
     /** Get the local network mask

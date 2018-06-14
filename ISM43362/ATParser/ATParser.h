@@ -44,8 +44,7 @@
 * at.recv("OK");
 * @endcode
 */
-class ATParser
-{
+class ATParser {
 private:
     // Serial information
     BufferedSpi *_serial_spi;
@@ -106,7 +105,7 @@ public:
     *
     * @param timeout timeout of the connection
     */
-    void setTimeout(int timeout) 
+    void setTimeout(int timeout)
     {
         _timeout = timeout;
         _serial_spi->setTimeout(timeout);
@@ -117,17 +116,19 @@ public:
     *
     * @param delimiter string of characters to use as line delimiters
     */
-    void setDelimiter(const char *delimiter) {
+    void setDelimiter(const char *delimiter)
+    {
         _delimiter = delimiter;
         _delim_size = strlen(delimiter);
     }
-    
+
     /**
     * Allows echo to be on or off
     *
     * @param echo 1 for echo and 0 turns it off
     */
-    void debugOn(uint8_t on) {
+    void debugOn(uint8_t on)
+    {
         dbg_on = (on) ? 1 : 0;
     }
 
@@ -243,7 +244,7 @@ public:
      * recv operation.
      */
     void abort();
-    
+
     /**
     * Process out-of-band data
     *
@@ -256,7 +257,8 @@ public:
     /**
     * Get buffer_size
     */
-    int get_size(void) {
+    int get_size(void)
+    {
         return _buffer_size;
     }
 

@@ -4,7 +4,7 @@
  * @brief   Software Buffer - Templated Ring Buffer for most data types
  * @author  sam grove
  * @version 1.0
- * @see     
+ * @see
  *
  * Copyright (c) 2013
  *
@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include "MyBuffer.h"
 
 template <class T>
@@ -29,7 +29,7 @@ MyBuffer<T>::MyBuffer(uint32_t size)
     _buf = new T [size];
     _size = size;
     clear();
-    
+
     return;
 }
 
@@ -37,21 +37,24 @@ template <class T>
 MyBuffer<T>::~MyBuffer()
 {
     delete [] _buf;
-    
+
     return;
 }
 
 template <class T>
-uint32_t MyBuffer<T>::getSize() 
-{ 
-    return this->_size; 
+uint32_t MyBuffer<T>::getSize()
+{
+    return this->_size;
 }
 
 template <class T>
-    uint32_t MyBuffer<T>::getNbAvailable()
+uint32_t MyBuffer<T>::getNbAvailable()
 {
-    if ( _wloc >= _rloc) return (_wloc - _rloc);
-    else return (_size - _rloc + _wloc);
+    if (_wloc >= _rloc) {
+        return (_wloc - _rloc);
+    } else {
+        return (_size - _rloc + _wloc);
+    }
 }
 
 template <class T>
@@ -60,7 +63,7 @@ void MyBuffer<T>::clear(void)
     _wloc = 0;
     _rloc = 0;
     memset(_buf, 0, _size);
-    
+
     return;
 }
 
