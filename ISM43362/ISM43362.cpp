@@ -26,7 +26,6 @@ ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinNam
       _packets(0), _packets_end(&_packets)
 {
     DigitalOut wakeup_pin(wakeup);
-    ISM43362::setTimeout((uint32_t)5000);
     _bufferspi.format(16, 0); /* 16bits, ploarity low, phase 1Edge, master mode */
     _bufferspi.frequency(20000000); /* up to 20 MHz */
     _active_id = 0xFF;
@@ -522,6 +521,12 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
         return -1;
     }
 
+    /* Non blocking mode : set Read Transport Timeout to 1ms */
+    if (!(_parser.send("R2=1") && check_response())) {
+        debug_if(_ism_debug, "ISM43362: open: R2 issue\n");
+        return -1;
+    }
+
     return true;
 }
 
@@ -560,10 +565,6 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
         }
     }
 
-    /* Change the write timeout */
-    if (!(_parser.send("S2=%d", _timeout) && check_response())) {
-        return false;
-    }
     /* set Write Transport Packet Size */
     int i = _parser.printf("S3=%d\r", (int)amount);
     if (i < 0) {
@@ -584,7 +585,6 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
 int ISM43362::check_recv_status(int id, void *data)
 {
     int read_amount;
-    static int keep_to = 0;
 
     debug_if(_ism_debug, "ISM43362: ISM43362 req check_recv_status\r\n");
     /* Activate the socket id in the wifi module */
@@ -599,16 +599,6 @@ int ISM43362::check_recv_status(int id, void *data)
         }
     }
 
-
-    /* MBED wifi driver is meant to be non-blocking, but we need anyway to
-     * wait for some data on the RECV side to avoid overflow on TX side, the
-     * tiemout is defined in higher layer */
-    if (keep_to != _timeout) {
-        if (!(_parser.send("R2=%d", _timeout) && check_response())) {
-            return -1;
-        }
-        keep_to = _timeout;
-    }
 
     if (!_parser.send("R0")) {
         return -1;
@@ -670,12 +660,6 @@ bool ISM43362::close(int id)
         return false;
     }
     return true;
-}
-
-void ISM43362::setTimeout(uint32_t timeout_ms)
-{
-    _timeout = timeout_ms;
-    _parser.setTimeout(timeout_ms);
 }
 
 bool ISM43362::readable()

@@ -185,13 +185,6 @@ public:
     bool close(int id);
 
     /**
-    * Allows timeout to be changed between commands
-    *
-    * @param timeout_ms timeout of the connection
-    */
-    void setTimeout(uint32_t timeout_ms);
-
-    /**
     * Checks if data is available
     */
     bool readable();
@@ -233,7 +226,6 @@ private:
     BufferedSpi _bufferspi;
     ATParser _parser;
     DigitalOut _resetpin;
-    volatile int _timeout;
     volatile int _active_id;
     void print_rx_buff(void);
     bool check_response(void);

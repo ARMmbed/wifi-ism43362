@@ -21,12 +21,6 @@
 // activate / de-activate debug
 #define ism_debug false
 
-// Various timeouts for different ISM43362 operations
-#define ISM43362_CONNECT_TIMEOUT 50000 /* milliseconds */
-#define ISM43362_SEND_TIMEOUT    1000   /* milliseconds */
-#define ISM43362_RECV_TIMEOUT    100   /* milliseconds */
-#define ISM43362_MISC_TIMEOUT    100   /* milliseconds */
-
 // Tested firmware versions
 // Example of versions string returned by the module:
 // "ISM43362-M3G-L44-SPI,C3.5.2.3.BETA9,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi"
@@ -52,8 +46,6 @@ ISM43362Interface::ISM43362Interface(bool debug)
 
     _mutex.lock();
     const char *read_version;
-
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
     // Check all supported firmware versions
     read_version = _ism.get_firmware_version();
@@ -100,7 +92,6 @@ int ISM43362Interface::connect()
         return NSAPI_ERROR_DHCP_FAILURE;
     }
 
-    _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
     int connect_status = _ism.connect(ap_ssid, ap_pass, ap_sec);
     debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", connect_status);
 
@@ -109,7 +100,6 @@ int ISM43362Interface::connect()
         return connect_status;
     }
 
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
     if (!_ism.getIPAddress()) {
         _mutex.unlock();
         return NSAPI_ERROR_DHCP_FAILURE;
@@ -135,7 +125,6 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
     char *ipbuff = new char[NSAPI_IP_SIZE];
     int ret = 0;
-    _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
     if (!_ism.dns_lookup(name, ipbuff)) {
         ret = NSAPI_ERROR_DEVICE_ERROR;
     } else {
@@ -203,8 +192,6 @@ int ISM43362Interface::disconnect()
 {
     _mutex.lock();
 
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
-
     if (!_ism.disconnect()) {
         _mutex.unlock();
         return NSAPI_ERROR_DEVICE_ERROR;
@@ -258,7 +245,6 @@ int8_t ISM43362Interface::get_rssi()
 int ISM43362Interface::scan(WiFiAccessPoint *res, unsigned count)
 {
     _mutex.lock();
-    _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
     int ret = _ism.scan(res, count);
     _mutex.unlock();
     return ret;
@@ -313,7 +299,6 @@ int ISM43362Interface::socket_close(void *handle)
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
     debug_if(_ism_debug, "ISM43362Interface: socket_close, id=%d\n", socket->id);
     int err = 0;
-    _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
     if (!_ism.close(socket->id)) {
         err = NSAPI_ERROR_DEVICE_ERROR;
@@ -348,7 +333,6 @@ int ISM43362Interface::socket_connect(void *handle, const SocketAddress &addr)
 int ISM43362Interface::socket_connect_nolock(void *handle, const SocketAddress &addr)
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
-    _ism.setTimeout(ISM43362_CONNECT_TIMEOUT);
     const char *proto = (socket->proto == NSAPI_UDP) ? "1" : "0";
     if (!_ism.open(proto, socket->id, addr.get_ip_address(), addr.get_port())) {
         return NSAPI_ERROR_DEVICE_ERROR;
@@ -372,7 +356,6 @@ void ISM43362Interface::socket_check_read()
                 /* Check if there is something to read for this socket. But if it */
                 /* has already been read : don't read again */
                 if ((socket->connected) && (socket->read_data_size == 0) && _cbs[socket->id].callback) {
-                    _ism.setTimeout(1);
                     /* if no callback is set, no need to read ?*/
                     int read_amount = _ism.check_recv_status(socket->id, socket->read_data);
                     if (read_amount > 0) {
@@ -412,7 +395,6 @@ int ISM43362Interface::socket_send(void *handle, const void *data, unsigned size
 int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsigned size)
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
-    _ism.setTimeout(ISM43362_SEND_TIMEOUT);
 
     if (size > ES_WIFI_MAX_TX_PACKET_SIZE) {
         size = ES_WIFI_MAX_TX_PACKET_SIZE;
@@ -439,8 +421,6 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
         _mutex.unlock();
         return NSAPI_ERROR_CONNECTION_LOST;
     }
-
-    _ism.setTimeout(ISM43362_RECV_TIMEOUT);
 
     if (socket->read_data_size == 0) {
         /* if no callback is set, no need to read ?*/
@@ -502,7 +482,6 @@ int ISM43362Interface::socket_sendto(void *handle, const SocketAddress &addr, co
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
 
     if (socket->connected && socket->addr != addr) {
-        _ism.setTimeout(ISM43362_MISC_TIMEOUT);
         if (!_ism.close(socket->id)) {
             debug_if(_ism_debug, "ISM43362Interface: socket_send ERROR\r\n");
             _mutex.unlock();
