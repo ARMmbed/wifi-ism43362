@@ -27,13 +27,6 @@
 #define ISM43362_RECV_TIMEOUT    100   /* milliseconds */
 #define ISM43362_MISC_TIMEOUT    100   /* milliseconds */
 
-// Tested firmware versions
-// Example of versions string returned by the module:
-// "ISM43362-M3G-L44-SPI,C3.5.2.3.BETA9,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi"
-// "ISM43362-M3G-L44-SPI,C3.5.2.2,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi"
-// Only the first version is checked !
-const char supported_fw_versions[2][15] = {"C3.5.2.3.BETA9", "C3.5.2.2"};
-
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 // ISM43362Interface implementation
@@ -51,23 +44,21 @@ ISM43362Interface::ISM43362Interface(bool debug)
     thread_read_socket.start(callback(this, &ISM43362Interface::socket_check_read));
 
     _mutex.lock();
-    const char *read_version;
 
     _ism.setTimeout(ISM43362_MISC_TIMEOUT);
 
     // Check all supported firmware versions
-    read_version = _ism.get_firmware_version();
+    _FwVersion = _ism.get_firmware_version();
 
-    if (!read_version) {
+    if (!_FwVersion) {
         error("ISM43362Interface: ERROR cannot read firmware version\r\n");
     }
-    debug_if(_ism_debug, "ISM43362Interface: read_version = [%s]\r\n", read_version);
-
-    if ((strcmp(read_version, supported_fw_versions[0]) == 0) || (strcmp(read_version, supported_fw_versions[1]) == 0)) {
-        debug_if(_ism_debug, "ISM43362Interface: firmware version is OK\r\n");
-    } else {
-        debug_if(_ism_debug, "ISM43362Interface: WARNING this firmware version has not been tested !\r\n");
+    debug_if(_ism_debug, "ISM43362Interface: read_version = %lu\r\n", _FwVersion);
+#if TARGET_DISCO_L475VG_IOT01A
+    if (_FwVersion < 3525) {
+        debug_if(_ism_debug, "ISM43362Interface: please update FW\r\n");
     }
+#endif
 
     _mutex.unlock();
 }

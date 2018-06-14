@@ -30,6 +30,7 @@ ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinNam
     _bufferspi.format(16, 0); /* 16bits, ploarity low, phase 1Edge, master mode */
     _bufferspi.frequency(20000000); /* up to 20 MHz */
     _active_id = 0xFF;
+    _FwVersionId = 0;
 
     reset();
 
@@ -60,6 +61,10 @@ extern "C" int32_t ParseNumber(char *ptr, uint8_t *cnt)
         ptr++;
         i++;
     }
+    if (*ptr == 'C') {  /* input string for version is C3.x.x.x */
+        ptr++;
+        i++;
+    }
     while (CHARISNUM(*ptr) || (*ptr == '.')) { /* Parse number */
         if (*ptr == '.') {
             ptr++; // next char
@@ -79,16 +84,18 @@ extern "C" int32_t ParseNumber(char *ptr, uint8_t *cnt)
     return sum;                          /* Return number */
 }
 
-const char *ISM43362::get_firmware_version(void)
+uint32_t ISM43362::get_firmware_version(void)
 {
     char tmp_buffer[250];
     char *ptr, *ptr2;
+    char _fw_version[16];
 
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     if (!(_parser.send("I?") && _parser.recv("%[^\n^\r]\r\n", tmp_buffer) && check_response())) {
         debug_if(_ism_debug, "ISM43362: get_firmware_version is FAIL\r\n");
         return 0;
     }
+    debug_if(_ism_debug, "ISM43362: get_firmware_version = %s\r\n", tmp_buffer);
 
     // Get the first version in the string
     ptr = strtok((char *)tmp_buffer, ",");
@@ -99,10 +106,9 @@ const char *ISM43362::get_firmware_version(void)
         return 0;
     }
     strncpy(_fw_version, ptr, ptr2 - ptr);
+    _FwVersionId = ParseNumber(_fw_version, NULL);
 
-    debug_if(_ism_debug, "ISM43362: get_firmware_version = [%s]\r\n", _fw_version);
-
-    return _fw_version;
+    return _FwVersionId;
 }
 
 bool ISM43362::reset(void)

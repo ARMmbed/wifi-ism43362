@@ -278,6 +278,7 @@ private:
     char ap_pass[64]; /* The longest allowed passphrase */
 
     bool _ism_debug;
+    uint32_t _FwVersion;
 
     void event();
     struct {
