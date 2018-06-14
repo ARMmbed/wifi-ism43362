@@ -522,6 +522,7 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
         return -1;
     }
 
+    debug_if(_ism_debug, "ISM43362: open ok with id %d type %s addr %s port %d\n", id, type, addr, port);
     return true;
 }
 
@@ -544,7 +545,7 @@ bool ISM43362::dns_lookup(const char *name, char *ip)
 bool ISM43362::send(int id, const void *data, uint32_t amount)
 {
     // The Size limit has to be checked on caller side.
-    if (amount > ES_WIFI_MAX_RX_PACKET_SIZE) {
+    if (amount > ES_WIFI_MAX_TX_PACKET_SIZE) {
         return false;
     }
 
