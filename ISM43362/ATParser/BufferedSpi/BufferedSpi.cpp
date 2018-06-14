@@ -246,6 +246,7 @@ ssize_t BufferedSpi::read()
 ssize_t BufferedSpi::read(uint32_t max)
 {
     uint32_t len = 0;
+    uint8_t FirstRemoved = 1;
     int tmp;
 
     disable_nss();
@@ -257,16 +258,18 @@ ssize_t BufferedSpi::read(uint32_t max)
     }
 
     enable_nss();
-    while (dataready.read() == 1 && (len < (_buf_size - 1))) {
+    while (dataready.read() == 1 && (len < (_buf_size - 2))) {
         tmp = SPI::write(0xAA);  // dummy write to receive 2 bytes
 
-        if (!((len == 0) && (tmp == 0x0A0D))) {
+        if (!((len == 0) && (tmp == 0x0A0D) && (FirstRemoved))) {
             /* do not take into account the 2 firts \r \n char in the buffer */
             if ((max == 0) || (len < max)) {
                 _rxbuf = (char)(tmp & 0x00FF);
                 _rxbuf = (char)((tmp >> 8) & 0xFF);
                 len += 2;
             }
+        } else {
+            FirstRemoved = 0;
         }
     }
     disable_nss();
