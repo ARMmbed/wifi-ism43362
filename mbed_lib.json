@@ -28,6 +28,10 @@
         "wifi-wakeup": {
             "help": "ISM43362 wakeup",
             "value": "NC"
+        },
+        "wifi-debug": {
+            "help": "Defines whether logging is on or off",
+            "value": false
         }
     },
     "target_overrides": {
