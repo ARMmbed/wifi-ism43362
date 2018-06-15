@@ -26,12 +26,13 @@
 /** ISM43362Interface class
  *  Implementation of the NetworkStack for the ISM43362
  */
-class ISM43362Interface : public NetworkStack, public WiFiInterface {
+class ISM43362Interface : public NetworkStack, public WiFiInterface
+{
 public:
     /** ISM43362Interface lifetime
      * @param debug     Enable debugging
      */
-    ISM43362Interface(bool debug = false);
+    ISM43362Interface(bool debug = MBED_CONF_ISM43362_WIFI_DEBUG);
 
     /** Start the interface
      *
