@@ -26,6 +26,7 @@
 #include "BufferedSpi.h"
 #include "Callback.h"
 
+#define DEFAULT_SPI_TIMEOUT 60000 /* 1 minute */
 
 /**
 * Parser class for parsing AT commands
@@ -51,7 +52,6 @@ private:
     int _buffer_size;
     char *_buffer;
     Mutex _bufferMutex;
-    volatile int _timeout;
 
     // Parsing information
     const char *_delimiter;
@@ -77,7 +77,7 @@ public:
     * @param timeout timeout of the connection
     * @param delimiter string of characters to use as line delimiters
     */
-    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = 8000, bool debug = false) :
+    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = DEFAULT_SPI_TIMEOUT, bool debug = false) :
         _serial_spi(&serial_spi),
         _buffer_size(buffer_size), _in_prev(0), _oobs(NULL)
     {
@@ -107,7 +107,6 @@ public:
     */
     void setTimeout(int timeout)
     {
-        _timeout = timeout;
         _serial_spi->setTimeout(timeout);
     }
 
