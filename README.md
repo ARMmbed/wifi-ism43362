@@ -1,10 +1,16 @@
 # ISM43362 WiFi driver for mbed-os
+
 The mbed OS driver for the ISM43362 WiFi module
 
+https://www.inventeksys.com/products-page/wifi-modules/ism4336-m3g-l44-e-embedded-serial-to-wifi-module/
+
+
 ## Currently supported platforms
+
 ISM43362 module is soldered on the following platforms from STMicroelectronics
-* DISCO_L475VG_IOT01A
-* DISCO_F413ZH
+
+ * [DISCO_L475VG_IOT01A](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/)
+ * [DISCO_F413ZH](https://os.mbed.com/platforms/ST-Discovery-F413H/)
 
 ## Configuration
 
@@ -33,8 +39,12 @@ Another way to enable these prints is overwrite MBED_CONF_ISM43362_WIFI_DEBUG in
 
 
 ## Firmware version
-This driver supports ISM43362-M3G-L44-SPI,C3.5.2.3.BETA9 and C3.5.2.2 firmware version
+
+This driver has been tested with C3.5.2.2 and C3.5.2.3.BETA9 firmware version
 
 ## wifi module FW update
+
+Only Wifi module from DISCO_L475VG_IOT01A can be updated (HW limitation for DISCO_F413ZH).
+
 For more information about the wifi FW version, refer to the detailed procedure in
 http://www.st.com/content/st_com/en/products/embedded-software/mcus-embedded-software/stm32-embedded-software/stm32cube-embedded-software-expansion/x-cube-azure.html
