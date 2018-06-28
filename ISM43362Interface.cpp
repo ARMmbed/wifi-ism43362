@@ -112,6 +112,10 @@ int ISM43362Interface::connect()
 
 nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *address, nsapi_version_t version)
 {
+    if (strlen(name) == 0) {
+        return NSAPI_ERROR_NO_SOCKET;
+    }
+
     _mutex.lock();
     if (address->set_ip_address(name)) {
         if (version != NSAPI_UNSPEC && address->get_ip_version() != version) {

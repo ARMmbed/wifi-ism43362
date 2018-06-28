@@ -562,7 +562,7 @@ bool ISM43362::dns_lookup(const char *name, char *ip)
 bool ISM43362::send(int id, const void *data, uint32_t amount)
 {
     // The Size limit has to be checked on caller side.
-    if (amount > ES_WIFI_MAX_RX_PACKET_SIZE) {
+    if (amount > ES_WIFI_MAX_TX_PACKET_SIZE) {
         debug_if(_ism_debug, "ISM43362 send: max issue\n");
         return false;
     }
