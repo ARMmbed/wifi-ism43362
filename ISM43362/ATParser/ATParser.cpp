@@ -36,8 +36,21 @@
 #endif
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-#define dbg_on 0
-//#define TRACE_AT_DATA 1
+// activate / de-activate debug
+#define dbg_on           0
+#define AT_DATA_PRINT    0
+#define AT_COMMAND_PRINT 0
+#define AT_HEXA_DATA     0
+
+ATParser::ATParser(BufferedSpi &serial_spi, const char *delimiter, int buffer_size, int timeout) :
+    _serial_spi(&serial_spi),
+    _buffer_size(buffer_size), _in_prev(0), _oobs(NULL)
+{
+    _buffer = new char[buffer_size];
+    setTimeout(timeout);
+    setDelimiter(delimiter);
+}
+
 
 // getc/putc handling with timeouts
 int ATParser::putc(char c)
@@ -64,15 +77,21 @@ int ATParser::write(const char *data, int size_of_data, int size_in_buff)
 {
     int i = 0;
     _bufferMutex.lock();
+    debug_if(dbg_on, "ATParser write: %d BYTES\r\n", size_of_data);
+    debug_if(AT_DATA_PRINT, "ATParser write: (ASCII) ", size_of_data);
     for (; i < size_of_data; i++) {
+        debug_if(AT_DATA_PRINT, "%c", data[i]);
         if (putc(data[i]) < 0) {
+            debug_if(AT_DATA_PRINT, "\r\n");
             _bufferMutex.unlock();
             return -1;
         }
     }
+    debug_if(AT_DATA_PRINT, "\r\n");
 
     _serial_spi->buffsend(size_of_data + size_in_buff);
     _bufferMutex.unlock();
+
     return (size_of_data + size_in_buff);
 }
 
@@ -87,11 +106,11 @@ int ATParser::read(char *data)
     if (!_serial_spi->readable()) {
         readsize = _serial_spi->read();
     } else {
-        error("Pending data when reading from WIFI\r\n");
+        debug_if(dbg_on, "Pending data when reading from WIFI\r\n");
         return -1;
     }
 
-    debug_if(dbg_on, "Avail in SPI %d\r\n", readsize);
+    debug_if(dbg_on, "ATParser read: %d data avail in SPI\r\n", readsize);
 
     if (readsize < 0) {
         _bufferMutex.unlock();
@@ -107,13 +126,21 @@ int ATParser::read(char *data)
         data[i] = c;
     }
 
-#if TRACE_AT_DATA
-    debug_if(dbg_on, "AT<< %d BYTES\r\n", readsize);
+#if AT_HEXA_DATA
+    debug_if(AT_DATA_PRINT, "ATParser read: (HEXA) ");
     for (i = 0; i < readsize; i++) {
-        debug_if(dbg_on, "%2X ", data[i]);
+        debug_if(AT_DATA_PRINT, "%2X ", data[i]);
+        if ((i + 1) % 20 == 0) {
+            debug_if(AT_DATA_PRINT, "\r\n");
+        }
     }
-    debug_if(dbg_on, "\r\n");
+    debug_if(AT_DATA_PRINT, "\r\n");
 #endif
+    debug_if(AT_DATA_PRINT, "ATParser read: (ASCII) ");
+    for (i = 0; i < readsize; i++) {
+        debug_if(AT_DATA_PRINT, "%c", data[i]);
+    }
+    debug_if(AT_DATA_PRINT, "\r\n");
 
     _bufferMutex.unlock();
 
@@ -229,7 +256,7 @@ bool ATParser::vsend(const char *command, va_list args)
 
     bool ret = !(_serial_spi->buffwrite(_buffer, i + j) < 0);
 
-    debug_if(dbg_on, "AT> %s\n", _buffer);
+    debug_if(AT_COMMAND_PRINT, "AT> %s\n", _buffer);
     _bufferMutex.unlock();
     return ret;
 }
@@ -237,16 +264,17 @@ bool ATParser::vsend(const char *command, va_list args)
 bool ATParser::vrecv(const char *response, va_list args)
 {
     _bufferMutex.lock();
-    /* Read from the wifi module, fill _rxbuffer */
-    //this->flush();
+
     if (!_serial_spi->readable()) {
-        debug_if(dbg_on, "NO DATA, read again\r\n");
+        // debug_if(dbg_on, "NO DATA, read again\r\n");
         if (_serial_spi->read() < 0) {
             return false;
         }
-    } else {
-        debug_if(dbg_on, "Pending data\r\n");
     }
+    // else {
+    //      debug_if(dbg_on, "Pending data\r\n");
+    // }
+
 restart:
     _aborted = false;
     // Iterate through each line in the expected response
@@ -281,7 +309,7 @@ restart:
         _buffer[offset++] = 'n';
         _buffer[offset++] = 0;
 
-        debug_if(dbg_on, "AT? ====%s====\n", _buffer);
+        // debug_if(dbg_on, "ATParser vrecv: AT? ====%s====\n", _buffer);
         // To workaround scanf's lack of error reporting, we actually
         // make two passes. One checks the validity with the modified
         // format string that only stores the matched characters (%n).
@@ -300,9 +328,8 @@ restart:
                 return false;
             }
 
-#if TRACE_AT_DATA
-            debug_if(dbg_on, "%2X ", c);
-#endif
+            // debug_if(AT_DATA_PRINT, "%2X ", c);
+
             _buffer[offset + j++] = c;
             _buffer[offset + j] = 0;
 
@@ -336,7 +363,7 @@ restart:
 
             // We only succeed if all characters in the response are matched
             if (count == j) {
-                debug_if(dbg_on, "AT= ====%s====\n", _buffer + offset);
+                debug_if(AT_COMMAND_PRINT, "AT= ====%s====\n", _buffer + offset);
                 // Reuse the front end of the buffer
                 memcpy(_buffer, response, i);
                 _buffer[i] = 0;
@@ -352,7 +379,7 @@ restart:
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
             if ((c == '\n')) {
-                debug_if(dbg_on, "New line AT<<< %s", _buffer + offset);
+                // debug_if(dbg_on, "New line AT<<< %s", _buffer+offset);
                 j = 0;
             }
             if ((j + 1 >= (_buffer_size - offset))) {
