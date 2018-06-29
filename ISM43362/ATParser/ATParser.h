@@ -76,7 +76,7 @@ public:
     * @param timeout timeout of the connection
     * @param delimiter string of characters to use as line delimiters
     */
-    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = DEFAULT_SPI_TIMEOUT) :
+    ATParser(BufferedSpi &serial_spi, const char *delimiter = "\r\n", int buffer_size = 1440, int timeout = DEFAULT_SPI_TIMEOUT);
 
     /**
     * Destructor
