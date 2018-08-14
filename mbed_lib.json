@@ -32,6 +32,10 @@
         "wifi-debug": {
             "help": "Defines whether logging is on or off",
             "value": false
+        },
+        "provide-default": {
+            "help": "Provide default WifiInterface. [true/false]",
+            "value": false
         }
     },
     "target_overrides": {
@@ -42,7 +46,8 @@
             "ism43362.wifi-nss": "PG_11",
             "ism43362.wifi-reset": "PH_1",
             "ism43362.wifi-dataready": "PG_12",
-            "ism43362.wifi-wakeup": "PB_15"
+            "ism43362.wifi-wakeup": "PB_15",
+            "ism43362.provide-default": true
         },
         "DISCO_L475VG_IOT01A": {
             "ism43362.wifi-miso": "PC_11",
@@ -51,7 +56,8 @@
             "ism43362.wifi-nss": "PE_0",
             "ism43362.wifi-reset": "PE_8",
             "ism43362.wifi-dataready": "PE_1",
-            "ism43362.wifi-wakeup": "PB_13"
+            "ism43362.wifi-wakeup": "PB_13",
+            "ism43362.provide-default": true
         }
      }
 }

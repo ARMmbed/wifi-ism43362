@@ -544,3 +544,12 @@ void ISM43362Interface::event()
         }
     }
 }
+
+#if MBED_CONF_ISM43362_PROVIDE_DEFAULT
+
+WiFiInterface *WiFiInterface::get_default_instance() {
+    static ISM43362Interface ism;
+    return &ism;
+}
+
+#endif
