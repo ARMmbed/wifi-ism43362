@@ -132,7 +132,7 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
     char *ipbuff = new char[NSAPI_IP_SIZE];
     int ret = 0;
     if (!_ism.dns_lookup(name, ipbuff)) {
-        ret = NSAPI_ERROR_DEVICE_ERROR;
+        ret = NSAPI_ERROR_DNS_FAILURE;
     } else {
         address->set_ip_address(ipbuff);
     }
