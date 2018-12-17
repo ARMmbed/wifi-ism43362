@@ -145,12 +145,14 @@ nsapi_error_t ISM43362Interface::gethostbyname(const char *name, SocketAddress *
 
 int ISM43362Interface::set_credentials(const char *ssid, const char *pass, nsapi_security_t security)
 {
-    if ((strlen(ssid) == 0) || (strlen(ssid) > 32)) {
+    if ((ssid == NULL) || (strlen(ssid) == 0) || (strlen(ssid) > 32)) {
         return NSAPI_ERROR_PARAMETER;
     }
 
-    if ((security != NSAPI_SECURITY_NONE) && (strcmp(pass, "") == 0)) {
-        return NSAPI_ERROR_PARAMETER;
+    if (security != NSAPI_SECURITY_NONE) {
+        if ((pass == NULL) || (strcmp(pass, "") == 0)) {
+            return NSAPI_ERROR_PARAMETER;
+        }
     }
 
     if (strlen(pass) > 63) {
