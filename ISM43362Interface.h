@@ -41,7 +41,7 @@ public:
      *
      *  @return         0 on success, negative error code on failure
      */
-    virtual int connect();
+    virtual nsapi_error_t connect();
 
     /** Start the interface
      *
@@ -53,7 +53,7 @@ public:
      *  @param channel   This parameter is not supported, setting it to anything else than 0 will result in NSAPI_ERROR_UNSUPPORTED
      *  @return          0 on success, or error code on failure
      */
-    virtual int connect(const char *ssid, const char *pass, nsapi_security_t security = NSAPI_SECURITY_NONE,
+    virtual nsapi_error_t connect(const char *ssid, const char *pass, nsapi_security_t security = NSAPI_SECURITY_NONE,
                         uint8_t channel = 0);
 
     /** Translates a hostname to an IP address with specific version
@@ -92,7 +92,7 @@ public:
     /** Stop the interface
      *  @return             0 on success, negative on failure
      */
-    virtual int disconnect();
+    virtual nsapi_error_t disconnect();
 
     /** Get the internally stored IP address
      *  @return             IP address of the interface or null if not yet connected
@@ -276,6 +276,7 @@ private:
     ism_security_t ap_sec;
     uint8_t ap_ch;
     char ap_pass[64]; /* The longest allowed passphrase */
+    nsapi_error_t _connect_status ;
 
     bool _ism_debug;
     uint32_t _FwVersion;
