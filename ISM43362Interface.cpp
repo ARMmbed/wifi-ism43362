@@ -61,10 +61,11 @@ ISM43362Interface::ISM43362Interface(bool debug)
     }
 #endif
 
+    _connect_status = NSAPI_ERROR_NO_CONNECTION;
     _mutex.unlock();
 }
 
-int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_security_t security,
+nsapi_error_t ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_security_t security,
                                uint8_t channel)
 {
     if (channel != 0) {
@@ -79,7 +80,7 @@ int ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_securit
     return connect();
 }
 
-int ISM43362Interface::connect()
+nsapi_error_t ISM43362Interface::connect()
 {
     if (strlen(ap_ssid) == 0) {
         return NSAPI_ERROR_NO_SSID;
@@ -92,15 +93,16 @@ int ISM43362Interface::connect()
         return NSAPI_ERROR_DHCP_FAILURE;
     }
 
-    int connect_status = _ism.connect(ap_ssid, ap_pass, ap_sec);
-    debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", connect_status);
+    _connect_status = _ism.connect(ap_ssid, ap_pass, ap_sec);
+    debug_if(_ism_debug, "ISM43362Interface: connect_status %d\n", _connect_status);
 
-    if (connect_status != NSAPI_ERROR_OK) {
+    if (_connect_status != NSAPI_ERROR_OK) {
         _mutex.unlock();
-        return connect_status;
+        return _connect_status;
     }
 
     if (!_ism.getIPAddress()) {
+        _connect_status = NSAPI_ERROR_DHCP_FAILURE;
         _mutex.unlock();
         return NSAPI_ERROR_DHCP_FAILURE;
     }
@@ -192,17 +194,22 @@ int ISM43362Interface::set_channel(uint8_t channel)
     return NSAPI_ERROR_UNSUPPORTED;
 }
 
-int ISM43362Interface::disconnect()
+nsapi_error_t ISM43362Interface::disconnect()
 {
     _mutex.lock();
+
+    if (_connect_status != NSAPI_ERROR_OK) {
+        _mutex.unlock();
+        return NSAPI_ERROR_NO_CONNECTION;
+    }
 
     if (!_ism.disconnect()) {
         _mutex.unlock();
         return NSAPI_ERROR_DEVICE_ERROR;
     }
 
+    _connect_status = NSAPI_ERROR_NO_CONNECTION;
     _mutex.unlock();
-
     return NSAPI_ERROR_OK;
 }
 
@@ -367,7 +374,7 @@ void ISM43362Interface::socket_check_read()
                         socket->read_data_size = read_amount;
                     } else if (read_amount < 0) {
                         /* Mark donw connection has been lost or closed */
-                        debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d closed\r\n", i, read_amount);
+                        debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d closed\r\n", i);
                         socket->connected = false;
                     }
                     if (read_amount != 0) {
