@@ -218,9 +218,13 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
         while (_parser.recv("%[^\n]\n", tmp)) {
             if (strstr(tmp, "OK")) {
                 _parser.flush();
+                _conn_status = NSAPI_STATUS_GLOBAL_UP;
+                _conn_stat_cb();
                 return NSAPI_ERROR_OK;
             }
             if (strstr(tmp, "JOIN")) {
+                _conn_status = NSAPI_STATUS_CONNECTING;
+                _conn_stat_cb();
                 if (strstr(tmp, "Failed")) {
                     _parser.flush();
                     return NSAPI_ERROR_AUTH_FAILURE;
@@ -234,6 +238,8 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
 
 bool ISM43362::disconnect(void)
 {
+    _conn_status = NSAPI_STATUS_DISCONNECTED;
+    _conn_stat_cb();
     return (_parser.send("CD") && check_response());
 }
 
@@ -692,8 +698,13 @@ bool ISM43362::writeable()
     return true;
 }
 
-void ISM43362::attach(Callback<void()> func)
+void ISM43362::attach(Callback<void()> status_cb)
 {
-    /* not applicable with SPI api */
+    _conn_stat_cb = status_cb;
 }
 
+nsapi_connection_status_t ISM43362::connection_status() const
+{
+    debug_if(_ism_debug, "ISM43362: connection_status %d\n", _conn_status);
+    return _conn_status;
+}

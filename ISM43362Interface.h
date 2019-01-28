@@ -158,6 +158,22 @@ public:
      */
     using NetworkInterface::add_dns_server;
 
+    /** Register callback for status reporting
+     *
+     *  The specified status callback function will be called on status changes
+     *  on the network. The parameters on the callback are the event type and
+     *  event-type dependent reason parameter.
+     *
+     *  @param status_cb The callback for status changes
+     */
+    virtual void attach(mbed::Callback<void(nsapi_event_t, intptr_t)> status_cb);
+
+    /** Get the connection status
+     *
+     *  @return         The connection status according to ConnectionStatusType
+     */
+    virtual nsapi_connection_status_t get_connection_status() const;
+
 protected:
     /** Open a socket
      *  @param handle       Handle in which to store new socket
@@ -293,6 +309,12 @@ private:
     virtual void socket_check_read();
     int socket_send_nolock(void *handle, const void *data, unsigned size);
     int socket_connect_nolock(void *handle, const SocketAddress &addr);
+
+    // Connection state reporting to application
+    void update_conn_state_cb();
+    nsapi_connection_status_t _conn_stat;
+    mbed::Callback<void(nsapi_event_t, intptr_t)> _conn_stat_cb;
+
 
 };
 

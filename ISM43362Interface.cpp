@@ -28,11 +28,14 @@
 
 // ISM43362Interface implementation
 ISM43362Interface::ISM43362Interface(bool debug)
-    : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug)
+    : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug),
+      _conn_stat(NSAPI_STATUS_DISCONNECTED),
+      _conn_stat_cb(NULL)
 {
     _ism_debug = ism_interface_debug || debug;
     memset(_ids, 0, sizeof(_ids));
     memset(_socket_obj, 0, sizeof(_socket_obj));
+    _ism.attach(this, &ISM43362Interface::update_conn_state_cb);
     memset(_cbs, 0, sizeof(_cbs));
     memset(ap_ssid, 0, sizeof(ap_ssid));
     memset(ap_pass, 0, sizeof(ap_pass));
@@ -553,6 +556,36 @@ void ISM43362Interface::event()
         }
     }
 }
+
+void ISM43362Interface::attach(Callback<void(nsapi_event_t, intptr_t)> status_cb)
+{
+    debug_if(_ism_debug, "ISM43362Interface: attach\n");
+    _conn_stat_cb = status_cb;
+}
+
+nsapi_connection_status_t ISM43362Interface::get_connection_status() const
+{
+    debug_if(_ism_debug, "ISM43362Interface: get_connection_status %d\n", _conn_stat);
+    return _conn_stat;
+}
+
+
+void ISM43362Interface::update_conn_state_cb()
+{
+    nsapi_connection_status_t prev_stat = _conn_stat;
+    _conn_stat = _ism.connection_status();
+    debug_if(_ism_debug, "ISM43362Interface: update_conn_state_cb %d -> %d\n", prev_stat, _conn_stat);
+
+    if (prev_stat == _conn_stat) {
+        return;
+    }
+
+    // Inform upper layers
+    if (_conn_stat_cb) {
+        _conn_stat_cb(NSAPI_EVENT_CONNECTION_STATUS_CHANGE, _conn_stat);
+    }
+}
+
 
 #if MBED_CONF_ISM43362_PROVIDE_DEFAULT
 
