@@ -437,7 +437,7 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
 
     if (!socket->connected) {
         _mutex.unlock();
-        return NSAPI_ERROR_CONNECTION_LOST;
+        return 0;
     }
 
     if (socket->read_data_size == 0) {
@@ -449,7 +449,7 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
             socket->connected = false;
             debug_if(_ism_debug, "ISM43362Interface socket_recv: socket closed\r\n");
             _mutex.unlock();
-            return NSAPI_ERROR_CONNECTION_LOST;
+            return 0;
         }
     }
 
