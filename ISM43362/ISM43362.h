@@ -224,6 +224,13 @@ public:
         attach(Callback<void()>(obj, method));
     }
 
+    /** Get the connection status
+     *
+     *  @return         The connection status according to ConnectionStatusType
+     */
+    nsapi_connection_status_t connection_status() const;
+
+
 private:
     BufferedSpi _bufferspi;
     ATParser _parser;
@@ -245,6 +252,10 @@ private:
     char _netmask_buffer[16];
     char _mac_buffer[18];
     uint32_t _FwVersionId;
+
+    // Connection state reporting
+    nsapi_connection_status_t _conn_status;
+    mbed::Callback<void()> _conn_stat_cb;
 };
 
 #endif
