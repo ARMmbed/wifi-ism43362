@@ -86,6 +86,8 @@ BufferedSpi::BufferedSpi(PinName mosi, PinName miso, PinName sclk, PinName _nss,
     _datareadyInt->rise(callback(this, &BufferedSpi::DatareadyRising));
 
     _cmddata_rdy_rising_event = 1;
+    nss = 1;
+    wait_us(15);
 
     return;
 }
@@ -110,10 +112,12 @@ void BufferedSpi::disable_nss()
 {
     nss = 1;
     wait_us(15);
+    unlock();
 }
 
 void BufferedSpi::enable_nss()
 {
+    lock();
     nss = 0;
     wait_us(15);
 }
@@ -248,8 +252,6 @@ ssize_t BufferedSpi::read(uint32_t max)
     uint32_t len = 0;
     uint8_t FirstRemoved = 1;
     int tmp;
-
-    disable_nss();
 
     /* wait for data ready is up */
     if (wait_cmddata_rdy_rising_event() != 0) {
