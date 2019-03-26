@@ -409,6 +409,7 @@ int ISM43362Interface::socket_send(void *handle, const void *data, unsigned size
     _mutex.lock();
     int ret = socket_send_nolock(handle, data, size);
     _mutex.unlock();
+
     return ret;
 }
 
@@ -417,13 +418,23 @@ int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsign
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
 
+    // https://github.com/ARMmbed/wifi-ism43362/issues/42
+    // if the size is too big then the packet will be split up,
+    // and the radio module will throw an error when sending too fast
+    bool pause_after_sending = false;
+
     if (size > ES_WIFI_MAX_TX_PACKET_SIZE) {
         size = ES_WIFI_MAX_TX_PACKET_SIZE;
+        pause_after_sending = true;
     }
 
     if (!_ism.send(socket->id, data, size)) {
         debug_if(_ism_debug, "ISM43362Interface: socket_send ERROR\r\n");
         return NSAPI_ERROR_DEVICE_ERROR; // or WOULD_BLOCK ?
+    }
+
+    if (pause_after_sending) {
+        wait_ms(50);
     }
 
     return size;
