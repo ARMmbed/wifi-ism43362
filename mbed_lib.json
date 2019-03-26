@@ -36,6 +36,10 @@
         "provide-default": {
             "help": "Provide default WifiInterface. [true/false]",
             "value": false
+        },
+        "read-thread-stack-size": {
+            "help": "Stack size of the read thread, defaults to MBED_CONF_APP_THREAD_STACK_SIZE or MBED_CONF_RTOS_THREAD_STACK_SIZE (default: 4096)",
+            "value": null
         }
     },
     "target_overrides": {
