@@ -91,17 +91,17 @@ uint32_t ISM43362::get_firmware_version(void)
 
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     if (!(_parser.send("I?") && _parser.recv("%[^\n^\r]\r\n", tmp_buffer) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: get_firmware_version is FAIL\r\n");
+        debug_if(_ism_debug, "\tISM43362: get_firmware_version is FAIL\r\n");
         return 0;
     }
-    debug_if(_ism_debug, "ISM43362: get_firmware_version = %s\r\n", tmp_buffer);
+    debug_if(_ism_debug, "\tISM43362: get_firmware_version = %s\r\n", tmp_buffer);
 
     // Get the first version in the string
     ptr = strtok((char *)tmp_buffer, ",");
     ptr = strtok(NULL, ",");
     ptr2 = strtok(NULL, ",");
     if (ptr == NULL) {
-        debug_if(_ism_debug, "ISM43362: get_firmware_version decoding is FAIL\r\n");
+        debug_if(_ism_debug, "\tISM43362: get_firmware_version decoding is FAIL\r\n");
         return 0;
     }
     strncpy(_fw_version, ptr, ptr2 - ptr);
@@ -113,7 +113,7 @@ uint32_t ISM43362::get_firmware_version(void)
 bool ISM43362::reset(void)
 {
     char tmp_buffer[100];
-    debug_if(_ism_debug, "ISM43362: Reset Module\r\n");
+    debug_if(_ism_debug, "\tISM43362: Reset Module\r\n");
     _resetpin = 0;
     wait_ms(10);
     _resetpin = 1;
@@ -123,7 +123,7 @@ bool ISM43362::reset(void)
     /* As the space char is not detected by sscanf function in parser.recv, */
     /* we need to use %[\n] */
     if (!_parser.recv(">%[^\n]", tmp_buffer)) {
-        debug_if(_ism_debug, "ISM43362: Reset Module failed\r\n");
+        debug_if(_ism_debug, "\tISM43362: Reset Module failed\r\n");
         return false;
     }
     return true;
@@ -133,7 +133,7 @@ void ISM43362::print_rx_buff(void)
 {
     char tmp[150] = {0};
     uint16_t i = 0;
-    debug_if(_ism_debug, "ISM43362: ");
+    debug_if(_ism_debug, "\tISM43362: ");
     while (i  < 150) {
         int c = _parser.getc();
         if (c < 0) {
@@ -144,7 +144,7 @@ void ISM43362::print_rx_buff(void)
         i++;
     }
     debug_if(_ism_debug, "\n");
-    debug_if(_ism_debug, "ISM43362: Buffer content =====%s=====\r\n", tmp);
+    debug_if(_ism_debug, "\tISM43362: Buffer content =====%s=====\r\n", tmp);
 }
 
 /*  checks the standard OK response of the WIFI module, shouldbe:
@@ -166,7 +166,7 @@ bool ISM43362::check_response(void)
     /* As the space char is not detected by sscanf function in parser.recv, */
     /* we need to use %[\n] */
     if (!_parser.recv(">%[^\n]", tmp_buffer)) {
-        debug_if(_ism_debug, "ISM43362: Missing prompt in WIFI resp\r\n");
+        debug_if(_ism_debug, "\tISM43362: Missing prompt in WIFI resp\r\n");
         print_rx_buff();
         _parser.flush();
         return false;
@@ -177,7 +177,7 @@ bool ISM43362::check_response(void)
     while (1) {
         int c = _parser.getc();
         if (c == 0x15) {
-            // debug_if(_ism_debug, "ISM43362: Flush char 0x%x\n", c);
+            // debug_if(_ism_debug, "\tISM43362: Flush char 0x%x\n", c);
             continue;
         } else {
             /*  How to put it back if needed ? */
@@ -206,7 +206,7 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
 
     /* Check security level is acceptable */
     if (ap_sec > ISM_SECURITY_WPA_WPA2) {
-        debug_if(_ism_debug, "ISM43362: Unsupported security level %d\n", ap_sec);
+        debug_if(_ism_debug, "\tISM43362: Unsupported security level %d\n", ap_sec);
         return NSAPI_ERROR_UNSUPPORTED;
     }
 
@@ -252,7 +252,7 @@ const char *ISM43362::getIPAddress(void)
     if (!(_parser.send("C?")
             && _parser.recv("%[^\n^\r]\r\n", tmp_ip_buffer)
             && check_response())) {
-        debug_if(_ism_debug, "ISM43362: getIPAddress LINE KO: %s\n", tmp_ip_buffer);
+        debug_if(_ism_debug, "\tISM43362: getIPAddress LINE KO: %s\n", tmp_ip_buffer);
         return 0;
     }
 
@@ -271,7 +271,7 @@ const char *ISM43362::getIPAddress(void)
     strncpy(_ip_buffer, ptr, ptr2 - ptr);
 
     tmp_ip_buffer[59] = 0;
-    debug_if(_ism_debug, "ISM43362: receivedIPAddress: %s\n", _ip_buffer);
+    debug_if(_ism_debug, "\tISM43362: receivedIPAddress: %s\n", _ip_buffer);
 
     return _ip_buffer;
 }
@@ -279,11 +279,11 @@ const char *ISM43362::getIPAddress(void)
 const char *ISM43362::getMACAddress(void)
 {
     if (!(_parser.send("Z5") && _parser.recv("%s\r\n", _mac_buffer) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: receivedMacAddress LINE KO: %s\n", _mac_buffer);
+        debug_if(_ism_debug, "\tISM43362: receivedMacAddress LINE KO: %s\n", _mac_buffer);
         return 0;
     }
 
-    debug_if(_ism_debug, "ISM43362: receivedMacAddress:%s, size=%d\r\n", _mac_buffer, sizeof(_mac_buffer));
+    debug_if(_ism_debug, "\tISM43362: receivedMacAddress:%s, size=%d\r\n", _mac_buffer, sizeof(_mac_buffer));
 
     return _mac_buffer;
 }
@@ -293,7 +293,7 @@ const char *ISM43362::getGateway()
     char tmp[250];
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     if (!(_parser.send("C?") && _parser.recv("%[^\n^\r]\r\n", tmp) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: getGateway LINE KO: %s\r\n", tmp);
+        debug_if(_ism_debug, "\tISM43362: getGateway LINE KO: %s\r\n", tmp);
         return 0;
     }
 
@@ -309,7 +309,7 @@ const char *ISM43362::getGateway()
 
     strncpy(_gateway_buffer, ptr, sizeof(_gateway_buffer));
 
-    debug_if(_ism_debug, "ISM43362: getGateway: %s\r\n", _gateway_buffer);
+    debug_if(_ism_debug, "\tISM43362: getGateway: %s\r\n", _gateway_buffer);
 
     return _gateway_buffer;
 }
@@ -319,7 +319,7 @@ const char *ISM43362::getNetmask()
     char tmp[250];
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     if (!(_parser.send("C?") && _parser.recv("%[^\n^\r]\r\n", tmp) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: getNetmask LINE KO: %s\n", tmp);
+        debug_if(_ism_debug, "\tISM43362: getNetmask LINE KO: %s\n", tmp);
         return 0;
     }
 
@@ -335,7 +335,7 @@ const char *ISM43362::getNetmask()
 
     strncpy(_netmask_buffer, ptr, sizeof(_netmask_buffer));
 
-    debug_if(_ism_debug, "ISM43362: getNetmask: %s\r\n", _netmask_buffer);
+    debug_if(_ism_debug, "\tISM43362: getNetmask: %s\r\n", _netmask_buffer);
 
     return _netmask_buffer;
 }
@@ -346,13 +346,13 @@ int8_t ISM43362::getRSSI()
     char tmp[25];
 
     if (!(_parser.send("CR") && _parser.recv("%s\r\n", tmp) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: getRSSI LINE KO: %s\r\n", tmp);
+        debug_if(_ism_debug, "\tISM43362: getRSSI LINE KO: %s\r\n", tmp);
         return 0;
     }
 
     rssi = ParseNumber(tmp, NULL);
 
-    debug_if(_ism_debug, "ISM43362: getRSSI: %d\r\n", rssi);
+    debug_if(_ism_debug, "\tISM43362: getRSSI: %d\r\n", rssi);
 
     return rssi;
 }
@@ -436,7 +436,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     char tmp[256];
 
     if (!(_parser.send("F0"))) {
-        debug_if(_ism_debug, "ISM43362: scan error\r\n");
+        debug_if(_ism_debug, "\tISM43362: scan error\r\n");
         return 0;
     }
 
@@ -448,7 +448,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             break;
         }
         nsapi_wifi_ap_t ap = {0};
-        debug_if(_ism_debug, "ISM43362: received:%s\n", tmp);
+        debug_if(_ism_debug, "\tISM43362: received:%s\n", tmp);
         ptr = strtok(tmp, ",");
         num = 0;
         while (ptr != NULL) {
@@ -492,7 +492,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
      * it as well as OK commands */
     _parser.flush();
 
-    debug_if(_ism_debug, "ISM43362: End of Scan: cnt=%d\n", cnt);
+    debug_if(_ism_debug, "\tISM43362: End of Scan: cnt=%d\n", cnt);
 
     return cnt;
 
@@ -503,48 +503,48 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
     /* TODO : This is the implementation for the client socket, need to check if need to create openserver too */
     //IDs only 0-3
     if ((id < 0) || (id > 3)) {
-        debug_if(_ism_debug, "ISM43362: open: wrong id\n");
+        debug_if(_ism_debug, "\tISM43362: open: wrong id\n");
         return false;
     }
     /* Set communication socket */
     _active_id = id;
     if (!(_parser.send("P0=%d", id) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: P0 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P0 issue\n");
         return false;
     }
     /* Set protocol */
     if (!(_parser.send("P1=%s", type) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: P1 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P1 issue\n");
         return false;
     }
     /* Set address */
     if (!(_parser.send("P3=%s", addr) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: P3 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P3 issue\n");
         return false;
     }
     if (!(_parser.send("P4=%d", port) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: P4 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P4 issue\n");
         return false;
     }
     /* Start client */
     if (!(_parser.send("P6=1") && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: P6 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P6 issue\n");
         return false;
     }
 
     /* request as much data as possible - i.e. module max size */
     if (!(_parser.send("R1=%d", ES_WIFI_MAX_RX_PACKET_SIZE) && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: R1 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: R1 issue\n");
         return -1;
     }
 
     /* Non blocking mode : set Read Transport Timeout to 1ms */
     if (!(_parser.send("R2=1") && check_response())) {
-        debug_if(_ism_debug, "ISM43362: open: R2 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: R2 issue\n");
         return -1;
     }
 
-    debug_if(_ism_debug, "ISM43362: open ok with id %d type %s addr %s port %d\n", id, type, addr, port);
+    debug_if(_ism_debug, "\tISM43362: open ok with id %d type %s addr %s port %d\n", id, type, addr, port);
 
     return true;
 }
@@ -555,13 +555,13 @@ bool ISM43362::dns_lookup(const char *name, char *ip)
 
     if (!(_parser.send("D0=%s", name) && _parser.recv("%s\r\n", tmp)
             && check_response())) {
-        debug_if(_ism_debug, "ISM43362 dns_lookup: D0 issue: %s\n", tmp);
+        debug_if(_ism_debug, "\tISM43362 dns_lookup: D0 issue: %s\n", tmp);
         return 0;
     }
 
     strncpy(ip, tmp, sizeof(tmp));
 
-    debug_if(_ism_debug, "ISM43362 dns_lookup: %s ok\n", ip);
+    debug_if(_ism_debug, "\tISM43362 dns_lookup: %s ok\n", ip);
     return 1;
 }
 
@@ -569,7 +569,7 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
 {
     // The Size limit has to be checked on caller side.
     if (amount > ES_WIFI_MAX_TX_PACKET_SIZE) {
-        debug_if(_ism_debug, "ISM43362 send: max issue\n");
+        debug_if(_ism_debug, "\tISM43362 send: max issue\n");
         return false;
     }
 
@@ -580,7 +580,7 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
     if (_active_id != id) {
         _active_id = id;
         if (!(_parser.send("P0=%d", id) && check_response())) {
-            debug_if(_ism_debug, "ISM43362 send: P0 issue\n");
+            debug_if(_ism_debug, "\tISM43362 send: P0 issue\n");
             return false;
         }
     }
@@ -588,7 +588,7 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
     /* set Write Transport Packet Size */
     int i = _parser.printf("S3=%d\r", (int)amount);
     if (i < 0) {
-        debug_if(_ism_debug, "ISM43362 send: S3 issue\n");
+        debug_if(_ism_debug, "\tISM43362 send: S3 issue\n");
         return false;
     }
     i = _parser.write((const char *)data, amount, i);
@@ -600,7 +600,7 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
         return false;
     }
 
-    debug_if(_ism_debug, "ISM43362 send: id %d amount %d\n", id, amount);
+    debug_if(_ism_debug, "\tISM43362 send: id %d amount %d\n", id, amount);
     return true;
 }
 
@@ -608,11 +608,11 @@ int ISM43362::check_recv_status(int id, void *data)
 {
     int read_amount;
 
-    debug_if(_ism_debug, "ISM43362 check_recv_status: id %d\r\n", id);
+    debug_if(_ism_debug, "\tISM43362 check_recv_status: id %d\r\n", id);
 
     /* Activate the socket id in the wifi module */
     if ((id < 0) || (id > 3)) {
-        debug_if(_ism_debug, "ISM43362 check_recv_status: ERROR with id %d\r\n", id);
+        debug_if(_ism_debug, "\tISM43362 check_recv_status: ERROR with id %d\r\n", id);
         return -1;
     }
 
@@ -630,7 +630,7 @@ int ISM43362::check_recv_status(int id, void *data)
     read_amount = _parser.read((char *)data);
 
     if (read_amount < 0) {
-        debug_if(_ism_debug, "ISM43362 check_recv_status: ERROR in data RECV, timeout?\r\n");
+        debug_if(_ism_debug, "\tISM43362 check_recv_status: ERROR in data RECV, timeout?\r\n");
         return -1; /* nothing to read */
     }
 
@@ -640,20 +640,20 @@ int ISM43362::check_recv_status(int id, void *data)
      */
     char *cleanup = (char *) data;
     while ((read_amount > 0) && (cleanup[read_amount - 1] == 0x15)) {
-        // debug_if(_ism_debug, "ISM43362 check_recv_status: spurious 0X15 trashed\r\n");
+        // debug_if(_ism_debug, "\tISM43362 check_recv_status: spurious 0X15 trashed\r\n");
         /* Remove the trailling char then search again */
         read_amount--;
     }
 
     if ((read_amount >= 6) && (strncmp("OK\r\n> ", (char *)data, 6) == 0)) {
-        // debug_if(_ism_debug, "ISM43362 check_recv_status: recv 2 nothing to read=%d\r\n", read_amount);
+        // debug_if(_ism_debug, "\tISM43362 check_recv_status: recv 2 nothing to read=%d\r\n", read_amount);
         // read_amount -= 6;
         return 0; /* nothing to read */
     } else if ((read_amount >= 8) && (strncmp((char *)((uint32_t) data + read_amount - 8), "\r\nOK\r\n> ", 8)) == 0) {
         /* bypass ""\r\nOK\r\n> " if present at the end of the chain */
         read_amount -= 8;
     } else {
-        debug_if(_ism_debug, "ISM43362 check_recv_status: ERROR, flushing %d bytes: ", read_amount);
+        debug_if(_ism_debug, "\tISM43362 check_recv_status: ERROR, flushing %d bytes: ", read_amount);
         // for (int i = 0; i < read_amount; i++) {
         //      debug_if(_ism_debug, "%2X ", cleanup[i]);
         // }
@@ -663,18 +663,18 @@ int ISM43362::check_recv_status(int id, void *data)
         return -1; /* nothing to read */
     }
 
-    debug_if(_ism_debug, "ISM43362 check_recv_status: id %d read_amount=%d\r\n", id, read_amount);
+    debug_if(_ism_debug, "\tISM43362 check_recv_status: id %d read_amount=%d\r\n", id, read_amount);
     return read_amount;
 }
 
 bool ISM43362::close(int id)
 {
     if ((id < 0) || (id > 3)) {
-        debug_if(_ism_debug, "ISM43362: Wrong socket number\n");
+        debug_if(_ism_debug, "\tISM43362: Wrong socket number\n");
         return false;
     }
     /* Set connection on this socket */
-    debug_if(_ism_debug, "ISM43362: CLOSE socket id=%d\n", id);
+    debug_if(_ism_debug, "\tISM43362: CLOSE socket id=%d\n", id);
     _active_id = id;
     if (!(_parser.send("P0=%d", id) && check_response())) {
         return false;
@@ -705,6 +705,6 @@ void ISM43362::attach(Callback<void()> status_cb)
 
 nsapi_connection_status_t ISM43362::connection_status() const
 {
-    debug_if(_ism_debug, "ISM43362: connection_status %d\n", _conn_status);
+    debug_if(_ism_debug, "\tISM43362: connection_status %d\n", _conn_status);
     return _conn_status;
 }
