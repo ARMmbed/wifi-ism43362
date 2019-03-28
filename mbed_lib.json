@@ -40,6 +40,10 @@
         "read-thread-stack-size": {
             "help": "Stack size of the read thread, defaults to MBED_CONF_APP_THREAD_STACK_SIZE or MBED_CONF_RTOS_THREAD_STACK_SIZE (default: 4096)",
             "value": null
+        },
+        "read-thread-stack-statically-allocated": {
+            "help": "Whether to statically allocate the memory for the read thread stack. Requires 'read-thread-stack-size' to be set.",
+            "value": false
         }
     },
     "target_overrides": {
