@@ -22,7 +22,7 @@
 #define ism_debug 0
 
 ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName resetpin, PinName datareadypin, PinName wakeup, bool debug)
-    : _bufferspi(mosi, miso, sclk, nss, datareadypin),
+    : _bufferspi(mosi, miso, sclk, nss, datareadypin, ES_WIFI_MAX_TX_SPI_SIZE),
       _parser(_bufferspi),
       _resetpin(resetpin),
       _packets(0), _packets_end(&_packets)
