@@ -78,7 +78,7 @@ int ATParser::write(const char *data, int size_of_data, int size_in_buff)
     int i = 0;
     _bufferMutex.lock();
     debug_if(dbg_on, "ATParser write: %d BYTES\r\n", size_of_data);
-    debug_if(AT_DATA_PRINT, "ATParser write: (ASCII) ", size_of_data);
+    debug_if(AT_DATA_PRINT, "ATParser write: (ASCII) ");
     for (; i < size_of_data; i++) {
         debug_if(AT_DATA_PRINT, "%c", data[i]);
         if (putc(data[i]) < 0) {
@@ -378,7 +378,7 @@ restart:
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if ((c == '\n')) {
+            if (c == '\n') {
                 // debug_if(dbg_on, "New line AT<<< %s", _buffer+offset);
                 j = 0;
             }

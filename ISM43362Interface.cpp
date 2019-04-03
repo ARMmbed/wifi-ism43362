@@ -63,14 +63,14 @@ ISM43362Interface::ISM43362Interface(bool debug)
         error("ISM43362Interface: ERROR cannot read firmware version\r\n");
     }
 
-    debug_if(_ism_debug, "ISM43362Interface: read_version = %lu\r\n", _FwVersion);
+    debug_if(_ism_debug, "ISM43362Interface: read_version = %u\r\n", _FwVersion);
     /* FW Revision should be with format "CX.X.X.X" with X as a single digit */
     if ( (_FwVersion < 1000) || (_FwVersion > 9999) ) {
         debug_if(_ism_debug, "ISM43362Interface: read_version issue\r\n");
     }
 
 #if TARGET_DISCO_L475VG_IOT01A
-    if (_FwVersion < ParseNumber(LATEST_FW_VERSION_NUMBER, NULL)) {
+    if (_FwVersion < ParseNumber((char *)LATEST_FW_VERSION_NUMBER, NULL)) {
         debug_if(_ism_debug, "ISM43362Interface: please update FW\r\n");
     }
 #endif
@@ -308,7 +308,7 @@ int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
         return NSAPI_ERROR_NO_SOCKET;
     }
     socket->id = id;
-    debug_if(_ism_debug, "ISM43362Interface: socket_open, id=%d\n", socket->id);
+    debug_if(_ism_debug, "ISM43362Interface: socket_open id=%d proto=%d\n", socket->id, proto);
     memset(socket->read_data, 0, sizeof(socket->read_data));
     socket->addr = 0;
     socket->read_data_size = 0;
@@ -384,10 +384,11 @@ void ISM43362Interface::socket_check_read()
                 /* has already been read : don't read again */
                 if ((socket->connected) && (socket->read_data_size == 0) && _cbs[socket->id].callback) {
                     /* if no callback is set, no need to read ?*/
+                    debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d\r\n", i);
                     int read_amount = _ism.check_recv_status(socket->id, socket->read_data);
-                    // debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d read_amount %d \r\n", i, read_amount);
                     if (read_amount > 0) {
                         socket->read_data_size = read_amount;
+                        debug_if(_ism_debug, "ISM43362Interface socket_check_read read_amount %d\r\n", read_amount);
                     } else if (read_amount < 0) {
                         /* Mark donw connection has been lost or closed */
                         debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d closed\r\n", i);
@@ -425,13 +426,15 @@ int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsign
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
 
+    debug_if(_ism_debug, "ISM43362Interface socket_send_nolock id %d size %u\r\n", socket->id, size);
+
     if (size > ES_WIFI_MAX_TX_PACKET_SIZE) {
         size = ES_WIFI_MAX_TX_PACKET_SIZE;
     }
 
     if (!_ism.send(socket->id, data, size)) {
-        debug_if(_ism_debug, "ISM43362Interface: socket_send ERROR\r\n");
-        return NSAPI_ERROR_DEVICE_ERROR; // or WOULD_BLOCK ?
+        debug_if(_ism_debug, "ISM43362Interface: socket_send_nolock ERROR\r\n");
+        return NSAPI_ERROR_DEVICE_ERROR;
     }
 
     return size;
@@ -554,6 +557,7 @@ void ISM43362Interface::socket_attach(void *handle, void (*cb)(void *), void *da
 {
     _mutex.lock();
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
+    debug_if(_ism_debug, "ISM43362Interface: socket_attach id %d\n", socket->id);
     _cbs[socket->id].callback = cb;
     _cbs[socket->id].data = data;
     _mutex.unlock();
@@ -561,6 +565,7 @@ void ISM43362Interface::socket_attach(void *handle, void (*cb)(void *), void *da
 
 void ISM43362Interface::event()
 {
+    debug_if(_ism_debug, "ISM43362Interface: event\n");
     for (int i = 0; i < ISM43362_SOCKET_COUNT; i++) {
         if (_cbs[i].callback) {
             _cbs[i].callback(_cbs[i].data);
