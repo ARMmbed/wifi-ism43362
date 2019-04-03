@@ -18,6 +18,14 @@
 #include "ISM43362Interface.h"
 #include "mbed_debug.h"
 
+#if MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE != 0
+#if MBED_CONF_ISM43362_READ_THREAD_STACK_STATICALLY_ALLOCATED == 1
+static uint8_t ism_wifi_thread_stack[MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE];
+#else
+static uint8_t *ism_wifi_thread_stack = NULL;
+#endif // MBED_CONF_ISM43362_READ_THREAD_STACK_STATICALLY_ALLOCATED == 1
+#endif // MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE != 0
+
                                             // Product ID,FW Revision,API Revision,Stack Revision,RTOS Revision,CPU Clock,Product Name
 #define LATEST_FW_VERSION_NUMBER "C3.5.2.5" // ISM43362-M3G-L44-SPI,C3.5.2.5.STM,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi
 
@@ -30,7 +38,7 @@
 ISM43362Interface::ISM43362Interface(bool debug)
     : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug),
 #if MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE != 0
-      thread_read_socket(osPriorityNormal, MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE),
+      thread_read_socket(osPriorityNormal, MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE, ism_wifi_thread_stack, "ism43362"),
 #endif
       _conn_stat(NSAPI_STATUS_DISCONNECTED),
       _conn_stat_cb(NULL)
