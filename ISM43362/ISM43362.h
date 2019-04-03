@@ -30,8 +30,14 @@
 // The input range for AT Command 'R1' is 0 to 1200 bytes
 // 'R1' Set Read Transport Packet Size (bytes)
 #define ES_WIFI_MAX_RX_PACKET_SIZE                     1200
-// Module maxume DATA payload for Tx packet is 1460
+// Module maximum DATA payload for Tx packet is 1460
 #define ES_WIFI_MAX_TX_PACKET_SIZE                     1460
+// Module maximum DATA SPI buffer is composed of:
+//   a preamble S3=xxxx\r where xxxx is the size of data
+//   Tx data itself
+// So max size is ES_WIFI_MAX_TX_PACKET_SIZE + the preamble size
+#define ES_WIFI_MAX_TX_SPI_SIZE      ES_WIFI_MAX_TX_PACKET_SIZE + 10
+
 typedef enum ism_security {
     ISM_SECURITY_NONE         = 0x0,      /*!< open access point */
     ISM_SECURITY_WEP          = 0x1,      /*!< phrase conforms to WEP */

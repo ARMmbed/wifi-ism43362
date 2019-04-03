@@ -203,10 +203,6 @@ ssize_t BufferedSpi::buffwrite(const void *s, size_t length)
         while (ptr != end) {
             _txbuf = *(ptr++);
         }
-        if (length & 1) { /* padding to send the last char */
-            _txbuf = '\n';
-            length++;
-        }
 
         /* 2nd write in SPI */
         BufferedSpi::txIrq();                // only write to hardware in one place
@@ -229,12 +225,6 @@ ssize_t BufferedSpi::buffsend(size_t length)
 
     this->enable_nss();
 
-    /* _txbuffer is already filled with data to send */
-    /* check if _txbuffer needs padding to send the last char */
-    if (length & 1) {
-        _txbuf = '\n';
-        length++;
-    }
     BufferedSpi::txIrq();                // only write to hardware in one place
 
     this->disable_nss();
@@ -291,14 +281,21 @@ void BufferedSpi::txIrq(void)
     /* write everything available in the _txbuffer */
     int value = 0;
     int dbg_cnt = 0;
-    while (_txbuf.available() && (_txbuf.getNbAvailable() > 0)) {
+
+    while (_txbuf.available()) {
+        /*  Get first 8 bits */
         value = _txbuf.get();
-        if (_txbuf.available() && ((_txbuf.getNbAvailable() % 2) != 0)) {
+        /* then next 8 bits to build 16 bits words to be sent on SPI */
+        if (_txbuf.available()) {
             value |= ((_txbuf.get() << 8) & 0XFF00);
-            SPI::write(value);
-            dbg_cnt++;
+        } else {
+            /*  In case of ODD size, add a \n char padding */
+            value |= (('\n' << 8) & 0XFF00);
         }
+        SPI::write(value);
+        dbg_cnt++;
     }
+
     debug_if(local_debug, "SPI Sent %d BYTES\r\n", 2 * dbg_cnt);
     // disable the TX interrupt when there is nothing left to send
     BufferedSpi::attach(NULL, BufferedSpi::TxIrq);
