@@ -282,7 +282,7 @@ struct ISM43362_socket {
     nsapi_protocol_t proto;
     volatile bool connected;
     SocketAddress addr;
-    char read_data[1400];
+    char read_data[ES_WIFI_MAX_RX_PACKET_SIZE];
     volatile uint32_t read_data_size;
 };
 
