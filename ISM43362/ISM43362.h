@@ -132,7 +132,7 @@ public:
 
     /** Scan for available networks
      *
-     * @param  ap    Pointer to allocated array to store discovered AP
+     * @param  ap    Pointer to allocated array to store discovered AP, or 0 to only count available AP
      * @param  limit Size of allocated @a res array, or 0 to only count available AP
      * @return       Number of entries in @a res, or if @a count was 0 number of available networks, negative on error
      *               see @a nsapi_error
