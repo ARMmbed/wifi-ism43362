@@ -309,6 +309,7 @@ private:
     virtual void socket_check_read();
     int socket_send_nolock(void *handle, const void *data, unsigned size);
     int socket_connect_nolock(void *handle, const SocketAddress &addr);
+    int ISM43362Interface::socket_recv_nolock(void *handle, void *data, unsigned size);
 
     // Connection state reporting to application
     void update_conn_state_cb();

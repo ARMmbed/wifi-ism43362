@@ -443,6 +443,13 @@ int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsign
 int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
 {
     _mutex.lock();
+    int ret = socket_recv_nolock(handle, data, size);
+    _mutex.unlock();
+    return ret;
+}
+
+int ISM43362Interface::socket_recv_nolock(void *handle, void *data, unsigned size)
+{
     unsigned recv = 0;
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
     char *ptr = (char *)data;
@@ -450,7 +457,6 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
     // debug_if(_ism_debug, "ISM43362Interface socket_recv: req=%d read_data_size=%d connected %d\r\n", size, socket->read_data_size, socket->connected);
 
     if (!socket->connected) {
-        _mutex.unlock();
         return 0;
     }
 
@@ -462,7 +468,6 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
         } else if (read_amount < 0) {
             socket->connected = false;
             debug_if(_ism_debug, "ISM43362Interface socket_recv: socket closed\r\n");
-            _mutex.unlock();
             return 0;
         }
     }
@@ -497,8 +502,6 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
     // else {
     //     debug_if(_ism_debug, "ISM43362Interface socket_recv: Nothing in buffer\r\n");
     // }
-
-    _mutex.unlock();
 
     if (recv > 0) {
         debug_if(_ism_debug, "ISM43362Interface socket_recv: recv=%d\r\n", recv);
@@ -543,8 +546,8 @@ int ISM43362Interface::socket_sendto(void *handle, const SocketAddress &addr, co
 
 int ISM43362Interface::socket_recvfrom(void *handle, SocketAddress *addr, void *data, unsigned size)
 {
-    int ret = socket_recv(handle, data, size);
     _mutex.lock();
+    int ret = socket_recv_nolock(handle, data, size);
     if ((ret >= 0) && addr) {
         struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
         *addr = socket->addr;
