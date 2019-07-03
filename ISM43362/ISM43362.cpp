@@ -549,21 +549,6 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
     return true;
 }
 
-bool ISM43362::dns_lookup(const char *name, char *ip)
-{
-    char tmp[30];
-
-    if (!(_parser.send("D0=%s", name) && _parser.recv("%s\r\n", tmp)
-            && check_response())) {
-        debug_if(_ism_debug, "\tISM43362 dns_lookup: D0 issue: %s\n", tmp);
-        return 0;
-    }
-
-    strncpy(ip, tmp, sizeof(tmp));
-
-    debug_if(_ism_debug, "\tISM43362 dns_lookup: %s ok\n", ip);
-    return 1;
-}
 
 bool ISM43362::send(int id, const void *data, uint32_t amount)
 {
