@@ -434,6 +434,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     unsigned cnt = 0, num = 0;
     char *ptr;
     char tmp[256];
+    bool found = false;
 
     if (!(_parser.send("F0"))) {
         debug_if(_ism_debug, "\tISM43362: scan error\r\n");
@@ -443,7 +444,8 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     /* Parse the received buffer and fill AP buffer */
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     while (_parser.recv("#%[^\n]\n", tmp)) {
-        if (limit != 0 && cnt >= limit) {
+        found = false;
+        if (res != 0 && limit != 0 && cnt >= limit) {
             /* reached end */
             break;
         }
@@ -451,7 +453,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
         debug_if(_ism_debug, "\tISM43362: received:%s\n", tmp);
         ptr = strtok(tmp, ",");
         num = 0;
-        while (ptr != NULL) {
+        while ((ptr != NULL) && (!found)) {
             switch (num++) {
                 case 0: /* Ignore index */
                 case 4: /* Ignore Max Rate */
@@ -475,17 +477,19 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
                     break;
                 case 8:
                     ap.channel = ParseNumber(ptr, NULL);
-                    num = 1;
+                    found = true;
                     break;
                 default:
                     break;
             }
             ptr = strtok(NULL, ",");
         }
-        if (res != NULL) {
-            res[cnt] = WiFiAccessPoint(ap);
-        }
-        cnt++;
+        if (found == true) {
+            if (res != NULL) {
+                res[cnt] = WiFiAccessPoint(ap);
+            }
+            cnt++;
+        } // else ?
     }
 
     /* We may stop before having read all the APs list, so flush the rest of
