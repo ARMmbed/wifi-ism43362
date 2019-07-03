@@ -300,6 +300,7 @@ int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
     }
 
     if (id == -1) {
+        _mutex.unlock();
         return NSAPI_ERROR_NO_SOCKET;
     }
     struct ISM43362_socket *socket = new struct ISM43362_socket;
