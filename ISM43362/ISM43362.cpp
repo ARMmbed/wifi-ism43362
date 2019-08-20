@@ -521,18 +521,30 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
         debug_if(_ism_debug, "\tISM43362: open: P1 issue\n");
         return false;
     }
+
     /* Set address */
     if (!(_parser.send("P3=%s", addr) && check_response())) {
         debug_if(_ism_debug, "\tISM43362: open: P3 issue\n");
         return false;
     }
+
     if (!(_parser.send("P4=%d", port) && check_response())) {
         debug_if(_ism_debug, "\tISM43362: open: P4 issue\n");
         return false;
     }
+
+    /*  In case of UDP, force client mode */
+    if( memcmp(type, "1", sizeof("1")) == 0) {
+        /* Disable server */
+        if (!(_parser.send("P5=0") && check_response())) {
+            debug_if(_ism_debug, "\tISM43362: open: P5 issue\n");
+            return false;
+        }
+    }
+
     /* Start client */
     if (!(_parser.send("P6=1") && check_response())) {
-        debug_if(_ism_debug, "\tISM43362: open: P6 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P6 issue, id=%d, addr=%s\n", id, addr);
         return false;
     }
 
