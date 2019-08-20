@@ -504,6 +504,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
 
 bool ISM43362::open(const char *type, int id, const char *addr, int port)
 {
+    static uint16_t rnglocalport = 0;
     /* TODO : This is the implementation for the client socket, need to check if need to create openserver too */
     //IDs only 0-3
     if ((id < 0) || (id > 3)) {
@@ -519,6 +520,27 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
     /* Set protocol */
     if (!(_parser.send("P1=%s", type) && check_response())) {
         debug_if(_ism_debug, "\tISM43362: open: P1 issue\n");
+        return false;
+    }
+
+    /* The IANA range for ephemeral ports is 49152<96>65535. */
+    /* implement automatic nr by sw because Queqtel assigns always the same initial nr */
+    /* generate random local port  number between 49152 and 65535 */
+    if (rnglocalport == 0) {
+        /* just at first open since board reboot */
+        rnglocalport = rand();
+        rnglocalport = ((uint16_t) (rnglocalport & 0xFFFF) >> 2) + 49152;
+    } else {
+        /* from second time function execution, increment by one */
+        rnglocalport += 1;
+    }
+    if (rnglocalport < 49152) {
+      rnglocalport = 49152;
+    }
+
+    /* Set local port */
+    if (!(_parser.send("P2=%d", rnglocalport) && check_response())) {
+        debug_if(_ism_debug, "\tISM43362: open: P2 issue\n");
         return false;
     }
 
