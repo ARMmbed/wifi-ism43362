@@ -115,9 +115,9 @@ bool ISM43362::reset(void)
     char tmp_buffer[100];
     debug_if(_ism_debug, "\tISM43362: Reset Module\r\n");
     _resetpin = 0;
-    wait_ms(10);
+    wait_us(10000);
     _resetpin = 1;
-    wait_ms(500);
+    rtos::ThisThread::sleep_for(500);
 
     /* Wait for prompt line : the string is "> ". */
     /* As the space char is not detected by sscanf function in parser.recv, */
