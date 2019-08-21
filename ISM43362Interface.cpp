@@ -258,6 +258,8 @@ struct ISM43362_socket {
 
 int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
 {
+    _mutex.lock();
+
     // Look for an unused socket
     int id = -1;
     for (int i = 0; i < ISM43362_SOCKET_COUNT; i++) {
@@ -269,9 +271,9 @@ int ISM43362Interface::socket_open(void **handle, nsapi_protocol_t proto)
     }
 
     if (id == -1) {
+        _mutex.unlock();
         return NSAPI_ERROR_NO_SOCKET;
     }
-    _mutex.lock();
     struct ISM43362_socket *socket = new struct ISM43362_socket;
     if (!socket) {
         _mutex.unlock();
@@ -374,7 +376,7 @@ void ISM43362Interface::socket_check_read()
             }
             _mutex.unlock();
         }
-        wait_ms(50);
+        rtos::ThisThread::sleep_for(50);
     }
 }
 

@@ -115,9 +115,9 @@ bool ISM43362::reset(void)
     char tmp_buffer[100];
     debug_if(_ism_debug, "\tISM43362: Reset Module\r\n");
     _resetpin = 0;
-    wait_ms(10);
+    wait_us(10000);
     _resetpin = 1;
-    wait_ms(500);
+    rtos::ThisThread::sleep_for(500);
 
     /* Wait for prompt line : the string is "> ". */
     /* As the space char is not detected by sscanf function in parser.recv, */
@@ -504,6 +504,7 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
 
 bool ISM43362::open(const char *type, int id, const char *addr, int port)
 {
+    static uint16_t rnglocalport = 0;
     /* TODO : This is the implementation for the client socket, need to check if need to create openserver too */
     //IDs only 0-3
     if ((id < 0) || (id > 3)) {
@@ -521,18 +522,51 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
         debug_if(_ism_debug, "\tISM43362: open: P1 issue\n");
         return false;
     }
+
+    /* The IANA range for ephemeral ports is 49152<96>65535. */
+    /* implement automatic nr by sw because Queqtel assigns always the same initial nr */
+    /* generate random local port  number between 49152 and 65535 */
+    if (rnglocalport == 0) {
+        /* just at first open since board reboot */
+        rnglocalport = rand();
+        rnglocalport = ((uint16_t) (rnglocalport & 0xFFFF) >> 2) + 49152;
+    } else {
+        /* from second time function execution, increment by one */
+        rnglocalport += 1;
+    }
+    if (rnglocalport < 49152) {
+      rnglocalport = 49152;
+    }
+
+    /* Set local port */
+    if (!(_parser.send("P2=%d", rnglocalport) && check_response())) {
+        debug_if(_ism_debug, "\tISM43362: open: P2 issue\n");
+        return false;
+    }
+
     /* Set address */
     if (!(_parser.send("P3=%s", addr) && check_response())) {
         debug_if(_ism_debug, "\tISM43362: open: P3 issue\n");
         return false;
     }
+
     if (!(_parser.send("P4=%d", port) && check_response())) {
         debug_if(_ism_debug, "\tISM43362: open: P4 issue\n");
         return false;
     }
+
+    /*  In case of UDP, force client mode */
+    if( memcmp(type, "1", sizeof("1")) == 0) {
+        /* Disable server */
+        if (!(_parser.send("P5=0") && check_response())) {
+            debug_if(_ism_debug, "\tISM43362: open: P5 issue\n");
+            return false;
+        }
+    }
+
     /* Start client */
     if (!(_parser.send("P6=1") && check_response())) {
-        debug_if(_ism_debug, "\tISM43362: open: P6 issue\n");
+        debug_if(_ism_debug, "\tISM43362: open: P6 issue, id=%d, addr=%s\n", id, addr);
         return false;
     }
 
