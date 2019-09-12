@@ -34,6 +34,8 @@ static uint8_t *ism_wifi_thread_stack = NULL;
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
+#define ISM43362_WIFI_IF_NAME "is0"
+
 // ISM43362Interface implementation
 ISM43362Interface::ISM43362Interface(bool debug)
     : _ism(MBED_CONF_ISM43362_WIFI_MOSI, MBED_CONF_ISM43362_WIFI_MISO, MBED_CONF_ISM43362_WIFI_SCLK, MBED_CONF_ISM43362_WIFI_NSS, MBED_CONF_ISM43362_WIFI_RESET, MBED_CONF_ISM43362_WIFI_DATAREADY, MBED_CONF_ISM43362_WIFI_WAKEUP, debug),
@@ -229,6 +231,12 @@ const char *ISM43362Interface::get_netmask()
     const char *ret = _ism.getNetmask();
     _mutex.unlock();
     return ret;
+}
+
+char *ISM43362Interface::get_interface_name(char *interface_name)
+{
+    memcpy(interface_name, ISM43362_WIFI_IF_NAME, sizeof(ISM43362_WIFI_IF_NAME));
+    return interface_name;
 }
 
 int8_t ISM43362Interface::get_rssi()
