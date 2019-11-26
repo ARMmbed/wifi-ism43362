@@ -85,6 +85,8 @@ public:
      */
     virtual const char *get_ip_address();
 
+    virtual nsapi_error_t get_ip_address(SocketAddress *address);
+
     /** Get the internally stored MAC address
      *  @return             MAC address of the interface
      */
@@ -97,12 +99,16 @@ public:
     */
     virtual const char *get_gateway();
 
+    virtual nsapi_error_t get_gateway(SocketAddress *address);
+
     /** Get the local network mask
      *
      *  @return         Null-terminated representation of the local network mask
      *                  or null if no network mask has been recieved
      */
     virtual const char *get_netmask();
+
+    virtual nsapi_error_t get_netmask(SocketAddress *address);
 
     /** Get the network interface name
      *
