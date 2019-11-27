@@ -209,6 +209,20 @@ const char *ISM43362Interface::get_ip_address()
     return ret;
 }
 
+nsapi_error_t ISM43362Interface::get_ip_address(SocketAddress *address)
+{
+    if (!address) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+    _mutex.lock();
+    if (address->set_ip_address(_ism.getIPAddress())) {
+        _mutex.unlock();
+        return NSAPI_ERROR_OK;
+    }
+    _mutex.unlock();
+    return NSAPI_ERROR_NO_ADDRESS;
+}
+
 const char *ISM43362Interface::get_mac_address()
 {
     _mutex.lock();
@@ -225,12 +239,40 @@ const char *ISM43362Interface::get_gateway()
     return ret;
 }
 
+nsapi_error_t ISM43362Interface::get_gateway(SocketAddress *address)
+{
+    if (!address) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+    _mutex.lock();
+    if (address->set_ip_address(_ism.getGateway())) {
+        _mutex.unlock();
+        return NSAPI_ERROR_OK;
+    }
+    _mutex.unlock();
+    return NSAPI_ERROR_NO_ADDRESS;
+}
+
 const char *ISM43362Interface::get_netmask()
 {
     _mutex.lock();
     const char *ret = _ism.getNetmask();
     _mutex.unlock();
     return ret;
+}
+
+nsapi_error_t ISM43362Interface::get_netmask(SocketAddress *address)
+{
+    if (!address) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+    _mutex.lock();
+    if (address->set_ip_address(_ism.getNetmask())) {
+        _mutex.unlock();
+        return NSAPI_ERROR_OK;
+    }
+    _mutex.unlock();
+    return NSAPI_ERROR_NO_ADDRESS;
 }
 
 char *ISM43362Interface::get_interface_name(char *interface_name)
