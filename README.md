@@ -38,13 +38,12 @@ Another way to enable these prints is overwrite MBED_CONF_ISM43362_WIFI_DEBUG in
             "ism43362.wifi-debug": true
 
 
-## Firmware version
+## Firmware version & firmware update
 
-This driver has been tested with C3.5.2.2 and C3.5.2.3.BETA9 firmware version
+The recommended firmware version is ISM43362-M3G-L44-SPI-C3.5.2.5.STM
 
-## wifi module FW update
+The utility to upgrade firmware on B-L475-IOT01A board can be found here: https://www.st.com/resource/en/utilities/inventek_fw_updater.zip
 
-Only Wifi module from DISCO_L475VG_IOT01A can be updated (HW limitation for DISCO_F413ZH).
+It contains instructions and URL where to get firmware from (https://www.inventeksys.com/iwin/firmware/)
 
-For more information about the wifi FW version, refer to the detailed procedure in
-http://www.st.com/content/st_com/en/products/embedded-software/mcus-embedded-software/stm32-embedded-software/stm32cube-embedded-software-expansion/x-cube-azure.html
+Note that only Wifi module from DISCO_L475VG_IOT01A can be updated (HW limitation for DISCO_F413ZH).
