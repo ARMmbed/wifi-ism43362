@@ -505,6 +505,12 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
 bool ISM43362::open(const char *type, int id, const char *addr, int port)
 {
     static uint16_t rnglocalport = 0;
+
+    if((type == NULL) || (addr == NULL)) {
+        debug_if(_ism_debug, "\tISM43362: parameter error\n");
+        return false;
+    }
+
     /* TODO : This is the implementation for the client socket, need to check if need to create openserver too */
     //IDs only 0-3
     if ((id < 0) || (id > 3)) {
