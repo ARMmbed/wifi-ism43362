@@ -353,7 +353,7 @@ restart:
 
             // Check for match
             int count = -1;
-            if (whole_line_wanted && c != '\n') {
+            if (whole_line_wanted && c != '\n' &&  c != '\r') {
                 // Don't attempt scanning until we get delimiter if they included it in format
                 // This allows recv("Foo: %s\n") to work, and not match with just the first character of a string
                 // (scanf does not itself match whitespace in its format string, so \n is not significant to it)
@@ -378,8 +378,8 @@ restart:
 
             // Clear the buffer when we hit a newline or ran out of space
             // running out of space usually means we ran into binary data
-            if (c == '\n') {
-                // debug_if(dbg_on, "New line AT<<< %s", _buffer+offset);
+            if ((c == '\n') || (c == '\r')) {
+                debug_if(dbg_on, "New line AT<<< %s", _buffer + offset);
                 j = 0;
             }
             if ((j + 1 >= (_buffer_size - offset))) {
