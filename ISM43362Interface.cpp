@@ -15,6 +15,7 @@
  */
 
 #include <string.h>
+#include <inttypes.h>
 #include "ISM43362Interface.h"
 #include "mbed_debug.h"
 
@@ -65,14 +66,14 @@ ISM43362Interface::ISM43362Interface(bool debug)
         error("ISM43362Interface: ERROR cannot read firmware version\r\n");
     }
 
-    debug_if(_ism_debug, "ISM43362Interface: read_version = %u\r\n", _FwVersion);
+    debug_if(_ism_debug, "ISM43362Interface: read_version = %" PRIu32 "\r\n", _FwVersion);
     /* FW Revision should be with format "CX.X.X.X" with X as a single digit */
     if ( (_FwVersion < 1000) || (_FwVersion > 9999) ) {
         debug_if(_ism_debug, "ISM43362Interface: read_version issue\r\n");
     }
 
 #if TARGET_DISCO_L475VG_IOT01A
-    if (_FwVersion < ParseNumber((char *)LATEST_FW_VERSION_NUMBER, NULL)) {
+    if ((int32_t)_FwVersion < ParseNumber((char *)LATEST_FW_VERSION_NUMBER, NULL)) {
         debug_if(_ism_debug, "ISM43362Interface: please update FW\r\n");
     }
 #endif

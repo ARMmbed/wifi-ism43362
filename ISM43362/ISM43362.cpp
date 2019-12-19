@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 #include <string.h>
+#include <inttypes.h>
 #include "ISM43362.h"
 #include "mbed_debug.h"
 
@@ -629,7 +630,7 @@ bool ISM43362::send(int id, const void *data, uint32_t amount)
         return false;
     }
 
-    debug_if(_ism_debug, "\tISM43362 send: id %d amount %d\n", id, amount);
+    debug_if(_ism_debug, "\tISM43362 send: id %d amount %" PRIu32 "\n", id, amount);
     return true;
 }
 
