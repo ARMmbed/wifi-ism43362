@@ -22,6 +22,7 @@
 
 #include "BufferedSpi.h"
 #include <stdarg.h>
+#include <inttypes.h>
 #include "mbed_debug.h"
 #include "mbed_error.h"
 
@@ -271,7 +272,7 @@ ssize_t BufferedSpi::read(uint32_t max)
         return -1;
     }
 
-    debug_if(local_debug, "SPI READ %d BYTES\r\n", len);
+    debug_if(local_debug, "SPI READ %" PRIu32 " BYTES\r\n", len);
 
     return len;
 }
