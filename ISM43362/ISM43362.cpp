@@ -443,10 +443,8 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     /* Recent FW version provide new AT command: F0=2 which allows to solve the issue too many APs
       With too many APs (depending on SSID name length), there is no answer from firmware to F0 command.
       F0=2 command allows to scan AP one by one. Command MR is then used to get next AP. */
-    if (_FwVersionId >= ParseNumber((char *)SINGLE_AP_SCAN_FW_VERSION_NUMBER, NULL)) {
+    if (_FwVersionId >= SINGLE_AP_SCAN_FW_VERSION_NUMBER) {
         AP_Scan_1by1 = true;
-    }
-    if (AP_Scan_1by1 == true) {
         if (!(_parser.send("F0=2"))) {
             debug_if(_ism_debug, "\tISM43362: scan error\r\n");
             return 0;
