@@ -440,8 +440,8 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     bool found = false;
     bool AP_Scan_1by1 = false;
 
-    /* Recent FW version provide new AT command: F0=2 which allows to solve the issue too mcuh AP
-      With too much AP (depending on SSID name length), there is no answer from firmware to F0 command.
+    /* Recent FW version provide new AT command: F0=2 which allows to solve the issue too many APs
+      With too many APs (depending on SSID name length), there is no answer from firmware to F0 command.
       F0=2 command allows to scan AP one by one. Command MR is then used to get next AP. */
     if (_FwVersionId >= ParseNumber((char *)SINGLE_AP_SCAN_FW_VERSION_NUMBER, NULL)) {
         AP_Scan_1by1 = true;
@@ -468,18 +468,35 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
         if (res != 0 && limit != 0 && cnt >= limit) {
             /* reached end */
             if (AP_Scan_1by1 == true) {
-                /* continue to receive AP 1 by 1 from firmware until we get OK */
-                while ((strncmp("OK\r", (char *)tmp, 2) != 0)) {
-                    _parser.flush();
-                    _parser.send("MR");
-                    _parser.recv("%[^\n^\r]\r\n", tmp);
+                /* continue to receive AP 1 by 1 from firmware until we get OK or ERROR */
+                while (strncmp("OK", (char *)tmp, 2) != 0) {
+                    if (strncmp("ERROR", (char *)tmp, 5) == 0) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
+                    if (!_parser.send("MR")) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
+                    if (!_parser.recv("%[^\n^\r]\r\n", tmp)) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
                 }
             }
             break;
         }
 
         if (AP_Scan_1by1 == true) {
-            /* In case of scan AP 1 by 1, end of list is detected thanks to OK */
+            /* In case of scan AP 1 by 1, end of list is detected thanks to OK or ERROR*/
+            if (strncmp("ERROR", (char *)tmp, 5) == 0) {
+                print_rx_buff();
+                _parser.flush();
+                return 0;
+            }
             if ((strncmp("OK\r", (char *)tmp, 2) == 0)) {
                 /* reached end */
                 break;

@@ -357,6 +357,8 @@ restart:
                 // Don't attempt scanning until we get delimiter if they included it in format
                 // This allows recv("Foo: %s\n") to work, and not match with just the first character of a string
                 // (scanf does not itself match whitespace in its format string, so \n is not significant to it)
+                // New ATCommand F0=2 ends with \r only whereas other commands end with \r\n ,
+                // so take both characters \r and \n into account to determine the end of line
             } else {
                 sscanf(_buffer + offset, _buffer, &count);
             }
