@@ -22,6 +22,9 @@
 // activate / de-activate debug
 #define ism_debug 0
 
+/* The minimum FW version to have AP scan one by one is C3.5.2.5 (ATcommand F0=2) */
+#define SINGLE_AP_SCAN_FW_VERSION_NUMBER 3525
+
 ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinName resetpin, PinName datareadypin, PinName wakeup, bool debug)
     : _bufferspi(mosi, miso, sclk, nss, datareadypin),
       _parser(_bufferspi),
@@ -436,20 +439,69 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     char *ptr;
     char tmp[256];
     bool found = false;
+    bool AP_Scan_1by1 = false;
 
-    if (!(_parser.send("F0"))) {
-        debug_if(_ism_debug, "\tISM43362: scan error\r\n");
-        return 0;
+    /* Recent FW version provide new AT command: F0=2 which allows to solve the issue too many APs
+      With too many APs (depending on SSID name length), there is no answer from firmware to F0 command.
+      F0=2 command allows to scan AP one by one. Command MR is then used to get next AP. */
+    if (_FwVersionId >= SINGLE_AP_SCAN_FW_VERSION_NUMBER) {
+        AP_Scan_1by1 = true;
+        if (!(_parser.send("F0=2"))) {
+            debug_if(_ism_debug, "\tISM43362: scan error\r\n");
+            return 0;
+        }
+    } else {
+        if (!(_parser.send("F0"))) {
+            debug_if(_ism_debug, "\tISM43362: scan error\r\n");
+            return 0;
+        }
     }
+
 
     /* Parse the received buffer and fill AP buffer */
     /* Use %[^\n] instead of %s to allow having spaces in the string */
-    while (_parser.recv("#%[^\n]\n", tmp)) {
+    while (_parser.recv("%[^\n^\r]\r\n", tmp)) {
         found = false;
+
+
         if (res != 0 && limit != 0 && cnt >= limit) {
             /* reached end */
+            if (AP_Scan_1by1 == true) {
+                /* continue to receive AP 1 by 1 from firmware until we get OK or ERROR */
+                while (strncmp("OK", (char *)tmp, 2) != 0) {
+                    if (strncmp("ERROR", (char *)tmp, 5) == 0) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
+                    if (!_parser.send("MR")) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
+                    if (!_parser.recv("%[^\n^\r]\r\n", tmp)) {
+                        print_rx_buff();
+                        _parser.flush();
+                        return 0;
+                    }
+                }
+            }
             break;
         }
+
+        if (AP_Scan_1by1 == true) {
+            /* In case of scan AP 1 by 1, end of list is detected thanks to OK or ERROR*/
+            if (strncmp("ERROR", (char *)tmp, 5) == 0) {
+                print_rx_buff();
+                _parser.flush();
+                return 0;
+            }
+            if ((strncmp("OK\r", (char *)tmp, 2) == 0)) {
+                /* reached end */
+                break;
+            }
+        }
+
         nsapi_wifi_ap_t ap = {0};
         debug_if(_ism_debug, "\tISM43362: received:%s\n", tmp);
         ptr = strtok(tmp, ",");
@@ -491,6 +543,15 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             }
             cnt++;
         } // else ?
+
+        if (AP_Scan_1by1 == true) {
+            _parser.flush();
+            /* retrive next AP */
+            if (!(_parser.send("MR"))) {
+                debug_if(_ism_debug, "\tISM43362: scan error\r\n");
+                return 0;
+            }
+        }
     }
 
     /* We may stop before having read all the APs list, so flush the rest of
@@ -507,7 +568,7 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
 {
     static uint16_t rnglocalport = 0;
 
-    if((type == NULL) || (addr == NULL)) {
+    if ((type == NULL) || (addr == NULL)) {
         debug_if(_ism_debug, "\tISM43362: parameter error\n");
         return false;
     }
@@ -536,13 +597,13 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
     if (rnglocalport == 0) {
         /* just at first open since board reboot */
         rnglocalport = rand();
-        rnglocalport = ((uint16_t) (rnglocalport & 0xFFFF) >> 2) + 49152;
+        rnglocalport = ((uint16_t)(rnglocalport & 0xFFFF) >> 2) + 49152;
     } else {
         /* from second time function execution, increment by one */
         rnglocalport += 1;
     }
     if (rnglocalport < 49152) {
-      rnglocalport = 49152;
+        rnglocalport = 49152;
     }
 
     /* Set local port */
@@ -563,7 +624,7 @@ bool ISM43362::open(const char *type, int id, const char *addr, int port)
     }
 
     /*  In case of UDP, force client mode */
-    if( memcmp(type, "1", sizeof("1")) == 0) {
+    if (memcmp(type, "1", sizeof("1")) == 0) {
         /* Disable server */
         if (!(_parser.send("P5=0") && check_response())) {
             debug_if(_ism_debug, "\tISM43362: open: P5 issue\n");
