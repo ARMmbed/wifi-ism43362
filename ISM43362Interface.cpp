@@ -31,7 +31,11 @@ static uint8_t *ism_wifi_thread_stack = NULL;
 #define LATEST_FW_VERSION_NUMBER "C3.5.2.5" // ISM43362-M3G-L44-SPI,C3.5.2.5.STM,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi
 
 // activate / de-activate debug
+#ifdef MBED_CONF_MBED_TRACE_ENABLE
+#define ism_interface_debug 1
+#else
 #define ism_interface_debug 0
+#endif
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -407,7 +411,7 @@ void ISM43362Interface::socket_check_read()
                 /* has already been read : don't read again */
                 if ((socket->connected) && (socket->read_data_size == 0) && _cbs[socket->id].callback) {
                     /* if no callback is set, no need to read ?*/
-                    debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d\r\n", i);
+                    // debug_if(_ism_debug, "ISM43362Interface socket_check_read: i %d\r\n", i);
                     int read_amount = _ism.check_recv_status(socket->id, socket->read_data);
                     if (read_amount > 0) {
                         socket->read_data_size = read_amount;
@@ -527,7 +531,7 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
         debug_if(_ism_debug, "ISM43362Interface socket_recv: recv=%d\r\n", recv);
         return recv;
     } else {
-        debug_if(_ism_debug, "ISM43362Interface socket_recv: returns WOULD BLOCK\r\n");
+        // debug_if(_ism_debug, "ISM43362Interface socket_recv: returns WOULD BLOCK\r\n");
         return NSAPI_ERROR_WOULD_BLOCK;
     }
 }

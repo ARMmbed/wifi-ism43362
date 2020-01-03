@@ -2,7 +2,7 @@
 
 The mbed OS driver for the ISM43362 WiFi module
 
-https://www.inventeksys.com/products-page/wifi-modules/ism4336-m3g-l44-e-embedded-serial-to-wifi-module/
+https://www.inventeksys.com/ism4336-m3g-l44-e-embedded-serial-to-wifi-module/
 
 
 ## Currently supported platforms
