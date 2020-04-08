@@ -1,6 +1,10 @@
 {
     "name": "ism43362",
     "config": {
+	    "wifi-country_code": {
+            "help": "Country Code to specify cannel number",
+            "value": "\"JP\""
+        },
         "wifi-miso": {
             "help": "SPI-MISO connection to external device",
             "value": "NC"

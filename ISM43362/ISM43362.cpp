@@ -196,6 +196,41 @@ bool ISM43362::dhcp(bool enabled)
     return (_parser.send("C4=%d", enabled ? 1 : 0) && check_response());
 }
 
+bool ISM43362::check_country_code(const char* country_codeP)
+{
+  int k = 0;
+
+  while(CountryCodeThirteenChannels[k] != "END")
+  {
+    if (CountryCodeThirteenChannels[k] == country_codeP)
+      return true;
+
+    k++;
+  }
+
+  k = 0;
+
+  while(CountryCodeElevenChannels[k] != "END")
+  {
+    if (CountryCodeThirteenChannels[k] == country_codeP)
+      return true;
+
+    k++;
+  }
+
+  k = 0;
+
+  while(CountryCodeFourteenChannels[k] != "END")
+  {
+    if (CountryCodeFourteenChannels[k] == country_codeP)
+      return true;
+
+    k++;
+  }
+
+  return false;
+}
+
 int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
 {
     char tmp[256];
@@ -215,6 +250,18 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
     }
 
     if (!(_parser.send("C3=%d", ap_sec) && check_response())) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+
+     /* Check country code is acceptable */
+    bool ret = check_country_code(MBED_CONF_ISM43362_WIFI_COUNTRY_CODE);
+    if (ret == false)
+    {
+      printf("ISM43362::connect Country Code ERROR\n");
+      return NSAPI_ERROR_PARAMETER;
+    }
+
+    if (!(_parser.send("CN=%s",  MBED_CONF_ISM43362_WIFI_COUNTRY_CODE) && check_response())) {
         return NSAPI_ERROR_PARAMETER;
     }
 
