@@ -237,7 +237,7 @@ bool ISM43362::check_country_code(const char* country_code)
 
   int k = 0;
 
-  while (strcmp(CountryCodeThirteenChannels[k].cc, "END"))
+  while (strcmp(CountryCodeThirteenChannels[k].cc, "ED"))
   {
     if (!strcmp(CountryCodeThirteenChannels[k].cc, country_code))
     {
@@ -250,7 +250,7 @@ bool ISM43362::check_country_code(const char* country_code)
 
   k = 0;
 
-  while (strcmp(CountryCodeElevenChannels[k].cc, "END"))
+  while (strcmp(CountryCodeElevenChannels[k].cc, "ED"))
   {
     if (!strcmp(CountryCodeElevenChannels[k].cc, country_code))
     {
@@ -533,7 +533,6 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             debug_if(_ism_debug, "\tISM43362: scan error\r\n");
             return 0;
         }
-
     } else {
         if (!(_parser.send("F0"))) {
             debug_if(_ism_debug, "\tISM43362: scan error\r\n");

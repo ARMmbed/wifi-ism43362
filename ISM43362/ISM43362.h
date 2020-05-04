@@ -257,11 +257,11 @@ private:
 
     typedef struct
     {
-      char cc[5];
+      char cc[3];
     } COUNTRY_CODE;
 
     COUNTRY_CODE CountryCodeElevenChannels[12] = {"AS", "CA", "FM", "GU", "KY", "MP", "PR", "TW",
-                                                 "UM", "US", "VI", "END"};
+                                                 "UM", "US", "VI", "ED"};
 
     COUNTRY_CODE CountryCodeThirteenChannels[127] = {"AE", "AG", "AN", "AR", "AT", "AU", "AW",
                                                     "AZ", "BA", "BB", "BD", "BE", "BG", "BH",
@@ -281,7 +281,7 @@ private:
                                                     "SE", "SG", "SI", "SK", "SV", "TH", "TJ",
                                                     "TN", "TR", "TT", "TZ", "UA", "UY", "UZ",
                                                     "VA", "VE", "VG", "VN", "YT", "ZA", "ZM",
-                                                    "END"};
+                                                    "ED"};
 };
 
 #endif
