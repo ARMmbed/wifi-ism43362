@@ -36,6 +36,17 @@ Some debug print on console can help to debug if necessary.
 
 Another way to enable these prints is overwrite MBED_CONF_ISM43362_WIFI_DEBUG in your json file:
             "ism43362.wifi-debug": true
+			
+## Options
+
+Country code can be specified by using the "ism43362.wifi-country-code" parameter of mbed_app.json.
+
+The default country code = US (USA)
+
+Link between code and country is here :
+https://www.juniper.net/documentation/en_US/release-independent/junos/topics/reference/specifications/access-point-ax411-country-channel-support.html
+
+Useful to use all the Radio Channels available in a country.
 
 
 ## Firmware version & firmware update

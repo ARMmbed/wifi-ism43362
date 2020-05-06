@@ -1,6 +1,9 @@
 {
     "name": "ism43362",
     "config": {
+	    "wifi-country-code": {
+            "help": "Country Code to specify channel number"
+        },
         "wifi-miso": {
             "help": "SPI-MISO connection to external device",
             "value": "NC"

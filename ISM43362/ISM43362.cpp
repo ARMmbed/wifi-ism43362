@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string.h>
 #include <inttypes.h>
 #include "ISM43362.h"
 #include "mbed_debug.h"
@@ -196,6 +195,76 @@ bool ISM43362::dhcp(bool enabled)
     return (_parser.send("C4=%d", enabled ? 1 : 0) && check_response());
 }
 
+/*
+  * @brief  Update wifi_module_country_code.
+  * @param  country_code: User's country code.
+  * @retval boolean value : false ->error
+
+WiFi module is only able to receive 4 country codes: CA, US, FR and JP.
+CA, US -> 11 channels
+FR     -> 13 channels
+JP     -> 14 channels
+
+Thus 3 country code groups can be defined :
+
+- Country Code Group corresponding to 11 channels : CountryCodeElevenChannels,
+- Country Code Group corresponding to 13 channels : CountryCodeThirteenChannels,
+- Country Code Group corresponding to 14 channels : CountryCodeFourteenChannels.
+
+For an user's country code (input country code), the function is specifying
+to which Country Code Group it is belonging.
+
+For instance,
+user's country code=VN (Vietnam - 13 channels) is belonging
+to CountryCodeThirteenChannels.
+
+Thus function is specifying that WIFI module must be configured
+with country code = FR.
+
+Function is updating WIFI_module_country_code with FR.
+
+*/
+
+#ifdef MBED_CONF_ISM43362_WIFI_COUNTRY_CODE
+bool ISM43362::check_country_code(const char* country_code)
+{
+  if ((!strcmp(country_code, "CA")) || (!strcmp(country_code, "US"))
+      || (!strcmp(country_code, "FR")) || (!strcmp(country_code, "JP")) )
+  {
+     strcpy(WIFI_module_country_code, country_code);
+    return true;
+  }
+
+  int k = 0;
+
+  while (strcmp(CountryCodeThirteenChannels[k].cc, "ED"))
+  {
+    if (!strcmp(CountryCodeThirteenChannels[k].cc, country_code))
+    {
+      strcpy(WIFI_module_country_code, "FR");
+      return true;
+    }
+
+    k++;
+  }
+
+  k = 0;
+
+  while (strcmp(CountryCodeElevenChannels[k].cc, "ED"))
+  {
+    if (!strcmp(CountryCodeElevenChannels[k].cc, country_code))
+    {
+      strcpy(WIFI_module_country_code, "US");
+      return true;
+    }
+
+    k++;
+  }
+
+  return false;
+}
+#endif
+
 int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_sec)
 {
     char tmp[256];
@@ -217,6 +286,20 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
     if (!(_parser.send("C3=%d", ap_sec) && check_response())) {
         return NSAPI_ERROR_PARAMETER;
     }
+
+#ifdef MBED_CONF_ISM43362_WIFI_COUNTRY_CODE
+     /* Check country code is acceptable */
+    bool ret = check_country_code(MBED_CONF_ISM43362_WIFI_COUNTRY_CODE);
+    if (ret == false)
+    {
+      printf("ISM43362::connect Country Code ERROR\n");
+      return NSAPI_ERROR_PARAMETER;
+    }
+
+    if (!(_parser.send("CN=%s/0",  WIFI_module_country_code) && check_response())) {
+        return NSAPI_ERROR_PARAMETER;
+    }
+#endif
 
     if (_parser.send("C0")) {
         while (_parser.recv("%[^\n]\n", tmp)) {
@@ -542,11 +625,11 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
                 res[cnt] = WiFiAccessPoint(ap);
             }
             cnt++;
-        } // else ?
+        }
 
         if (AP_Scan_1by1 == true) {
             _parser.flush();
-            /* retrive next AP */
+            /* retrieve next AP */
             if (!(_parser.send("MR"))) {
                 debug_if(_ism_debug, "\tISM43362: scan error\r\n");
                 return 0;
