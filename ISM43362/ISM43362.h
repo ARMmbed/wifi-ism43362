@@ -260,28 +260,8 @@ private:
       char cc[3];
     } COUNTRY_CODE;
 
-    COUNTRY_CODE CountryCodeElevenChannels[12] = {"AS", "CA", "FM", "GU", "KY", "MP", "PR", "TW",
-                                                 "UM", "US", "VI", "ED"};
-
-    COUNTRY_CODE CountryCodeThirteenChannels[127] = {"AE", "AG", "AN", "AR", "AT", "AU", "AW",
-                                                    "AZ", "BA", "BB", "BD", "BE", "BG", "BH",
-                                                    "BM", "BN", "BO", "BR", "BS", "BT", "BY",
-                                                    "CH", "CN", "CL", "CO", "CR", "CU", "CV",
-                                                    "CY", "CZ", "DE", "DK", "DM", "DO", "EC",
-                                                    "EE", "EG", "ES", "FI", "FK", "FR", "GB",
-                                                    "GF", "GG", "GI", "GP", "GR", "GT", "HK",
-                                                    "HN", "HR", "HT", "HU", "ID", "IE", "IL",
-                                                    "IM", "IN", "IS", "IT", "JE", "JM", "JO",
-                                                    "KE", "KI", "KR", "KW", "LA", "LB", "LI",
-                                                    "LK", "LS", "LT", "LU", "LV", "MA", "MC",
-                                                    "MK", "MO", "MQ", "MR", "MT", "MU", "MV",
-                                                    "MW", "MX", "MY", "NG", "NI", "NL", "NO",
-                                                    "NZ", "OM", "PA", "PE", "PG", "PH", "PK",
-                                                    "PL", "PM", "PT", "RE", "RO", "RU", "SA",
-                                                    "SE", "SG", "SI", "SK", "SV", "TH", "TJ",
-                                                    "TN", "TR", "TT", "TZ", "UA", "UY", "UZ",
-                                                    "VA", "VE", "VG", "VN", "YT", "ZA", "ZM",
-                                                    "ED"};
+    COUNTRY_CODE CountryCodeElevenChannels[12];
+    COUNTRY_CODE CountryCodeThirteenChannels[127];
 };
 
 #endif

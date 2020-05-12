@@ -36,6 +36,173 @@ ISM43362::ISM43362(PinName mosi, PinName miso, PinName sclk, PinName nss, PinNam
     _active_id = 0xFF;
     _FwVersionId = 0;
 
+    /* Init CountryCodeElevenChannels */
+    strcpy(CountryCodeElevenChannels[0].cc, "AS");
+    strcpy(CountryCodeElevenChannels[1].cc, "CA");
+    strcpy(CountryCodeElevenChannels[2].cc, "FM");
+    strcpy(CountryCodeElevenChannels[3].cc, "GU");
+    strcpy(CountryCodeElevenChannels[4].cc, "KY");
+    strcpy(CountryCodeElevenChannels[5].cc, "MP");
+    strcpy(CountryCodeElevenChannels[6].cc, "PR");
+    strcpy(CountryCodeElevenChannels[7].cc, "TW");
+    strcpy(CountryCodeElevenChannels[8].cc, "UM");
+    strcpy(CountryCodeElevenChannels[9].cc, "US");
+    strcpy(CountryCodeElevenChannels[10].cc, "VI");
+    strcpy(CountryCodeElevenChannels[11].cc, "ED");
+
+   /* Init CountryCodeThirteenChannels */
+
+    strcpy(CountryCodeThirteenChannels[0].cc, "AE");
+    strcpy(CountryCodeThirteenChannels[1].cc, "AG");
+    strcpy(CountryCodeThirteenChannels[2].cc, "AN");
+    strcpy(CountryCodeThirteenChannels[3].cc, "AR");
+    strcpy(CountryCodeThirteenChannels[4].cc, "AT");
+    strcpy(CountryCodeThirteenChannels[5].cc, "AU");
+    strcpy(CountryCodeThirteenChannels[6].cc, "AW");
+    strcpy(CountryCodeThirteenChannels[7].cc, "AZ");
+
+    strcpy(CountryCodeThirteenChannels[8].cc, "BA");
+    strcpy(CountryCodeThirteenChannels[9].cc, "BB");
+    strcpy(CountryCodeThirteenChannels[10].cc, "BD");
+    strcpy(CountryCodeThirteenChannels[11].cc, "BE");
+    strcpy(CountryCodeThirteenChannels[12].cc, "BG");
+    strcpy(CountryCodeThirteenChannels[13].cc, "BH");
+    strcpy(CountryCodeThirteenChannels[14].cc, "BN");
+    strcpy(CountryCodeThirteenChannels[15].cc, "BM");
+    strcpy(CountryCodeThirteenChannels[16].cc, "BO");
+    strcpy(CountryCodeThirteenChannels[17].cc, "BR");
+    strcpy(CountryCodeThirteenChannels[18].cc, "BS");
+    strcpy(CountryCodeThirteenChannels[19].cc, "BT");
+    strcpy(CountryCodeThirteenChannels[20].cc, "BY");
+
+    strcpy(CountryCodeThirteenChannels[21].cc, "CH");
+    strcpy(CountryCodeThirteenChannels[22].cc, "CN");
+    strcpy(CountryCodeThirteenChannels[23].cc, "CL");
+    strcpy(CountryCodeThirteenChannels[24].cc, "CO");
+    strcpy(CountryCodeThirteenChannels[25].cc, "CR");
+    strcpy(CountryCodeThirteenChannels[26].cc, "CU");
+    strcpy(CountryCodeThirteenChannels[27].cc, "CV");
+    strcpy(CountryCodeThirteenChannels[28].cc, "CY");
+    strcpy(CountryCodeThirteenChannels[29].cc, "CZ");
+
+    strcpy(CountryCodeThirteenChannels[30].cc, "DE");
+    strcpy(CountryCodeThirteenChannels[31].cc, "DK");
+    strcpy(CountryCodeThirteenChannels[32].cc, "DM");
+    strcpy(CountryCodeThirteenChannels[33].cc, "DO");
+
+    strcpy(CountryCodeThirteenChannels[34].cc, "EC");
+    strcpy(CountryCodeThirteenChannels[35].cc, "EE");
+    strcpy(CountryCodeThirteenChannels[36].cc, "EG");
+    strcpy(CountryCodeThirteenChannels[37].cc, "ES");
+
+    strcpy(CountryCodeThirteenChannels[38].cc, "FI");
+    strcpy(CountryCodeThirteenChannels[39].cc, "FK");
+    strcpy(CountryCodeThirteenChannels[40].cc, "FR");
+
+    strcpy(CountryCodeThirteenChannels[41].cc, "GB");
+    strcpy(CountryCodeThirteenChannels[42].cc, "GF");
+    strcpy(CountryCodeThirteenChannels[43].cc, "GG");
+    strcpy(CountryCodeThirteenChannels[44].cc, "GI");
+    strcpy(CountryCodeThirteenChannels[45].cc, "GP");
+    strcpy(CountryCodeThirteenChannels[46].cc, "GR");
+    strcpy(CountryCodeThirteenChannels[47].cc, "GT");
+
+    strcpy(CountryCodeThirteenChannels[48].cc, "HK");
+    strcpy(CountryCodeThirteenChannels[49].cc, "HN");
+    strcpy(CountryCodeThirteenChannels[50].cc, "HR");
+    strcpy(CountryCodeThirteenChannels[51].cc, "HT");
+    strcpy(CountryCodeThirteenChannels[52].cc, "HU");
+
+    strcpy(CountryCodeThirteenChannels[53].cc, "ID");
+    strcpy(CountryCodeThirteenChannels[54].cc, "IE");
+    strcpy(CountryCodeThirteenChannels[55].cc, "IL");
+    strcpy(CountryCodeThirteenChannels[56].cc, "IM");
+    strcpy(CountryCodeThirteenChannels[57].cc, "IN");
+    strcpy(CountryCodeThirteenChannels[58].cc, "IS");
+    strcpy(CountryCodeThirteenChannels[59].cc, "IT");
+
+    strcpy(CountryCodeThirteenChannels[60].cc, "JE");
+    strcpy(CountryCodeThirteenChannels[61].cc, "JM");
+    strcpy(CountryCodeThirteenChannels[62].cc, "JO");
+
+    strcpy(CountryCodeThirteenChannels[63].cc, "KE");
+    strcpy(CountryCodeThirteenChannels[64].cc, "KI");
+    strcpy(CountryCodeThirteenChannels[65].cc, "KR");
+    strcpy(CountryCodeThirteenChannels[66].cc, "KW");
+
+    strcpy(CountryCodeThirteenChannels[67].cc, "LA");
+    strcpy(CountryCodeThirteenChannels[68].cc, "LB");
+    strcpy(CountryCodeThirteenChannels[69].cc, "LI");
+    strcpy(CountryCodeThirteenChannels[70].cc, "LK");
+    strcpy(CountryCodeThirteenChannels[71].cc, "LS");
+    strcpy(CountryCodeThirteenChannels[72].cc, "LT");
+    strcpy(CountryCodeThirteenChannels[73].cc, "LU");
+    strcpy(CountryCodeThirteenChannels[74].cc, "LV");
+
+    strcpy(CountryCodeThirteenChannels[77].cc, "MA");
+    strcpy(CountryCodeThirteenChannels[78].cc, "MC");
+    strcpy(CountryCodeThirteenChannels[79].cc, "MK");
+    strcpy(CountryCodeThirteenChannels[25].cc, "M0");
+    strcpy(CountryCodeThirteenChannels[80].cc, "MQ");
+    strcpy(CountryCodeThirteenChannels[81].cc, "MR");
+    strcpy(CountryCodeThirteenChannels[82].cc, "MT");
+    strcpy(CountryCodeThirteenChannels[83].cc, "MU");
+    strcpy(CountryCodeThirteenChannels[84].cc, "MV");
+    strcpy(CountryCodeThirteenChannels[85].cc, "MW");
+    strcpy(CountryCodeThirteenChannels[86].cc, "MX");
+    strcpy(CountryCodeThirteenChannels[87].cc, "MY");
+
+    strcpy(CountryCodeThirteenChannels[88].cc, "NG");
+    strcpy(CountryCodeThirteenChannels[89].cc, "NI");
+    strcpy(CountryCodeThirteenChannels[90].cc, "NL");
+    strcpy(CountryCodeThirteenChannels[91].cc, "NO");
+    strcpy(CountryCodeThirteenChannels[92].cc, "NZ");
+
+    strcpy(CountryCodeThirteenChannels[93].cc, "OM");
+
+    strcpy(CountryCodeThirteenChannels[94].cc, "PA");
+    strcpy(CountryCodeThirteenChannels[95].cc, "PE");
+    strcpy(CountryCodeThirteenChannels[96].cc, "PG");
+    strcpy(CountryCodeThirteenChannels[97].cc, "PH");
+    strcpy(CountryCodeThirteenChannels[98].cc, "PK");
+    strcpy(CountryCodeThirteenChannels[99].cc, "PL");
+    strcpy(CountryCodeThirteenChannels[100].cc, "PM");
+    strcpy(CountryCodeThirteenChannels[101].cc, "PT");
+
+    strcpy(CountryCodeThirteenChannels[102].cc, "RE");
+    strcpy(CountryCodeThirteenChannels[103].cc, "RO");
+    strcpy(CountryCodeThirteenChannels[104].cc, "RU");
+
+    strcpy(CountryCodeThirteenChannels[105].cc, "SA");
+    strcpy(CountryCodeThirteenChannels[106].cc, "SE");
+    strcpy(CountryCodeThirteenChannels[106].cc, "SG");
+    strcpy(CountryCodeThirteenChannels[107].cc, "SI");
+    strcpy(CountryCodeThirteenChannels[108].cc, "SK");
+    strcpy(CountryCodeThirteenChannels[109].cc, "SV");
+
+    strcpy(CountryCodeThirteenChannels[110].cc, "TH");
+    strcpy(CountryCodeThirteenChannels[111].cc, "TJ");
+    strcpy(CountryCodeThirteenChannels[112].cc, "TN");
+    strcpy(CountryCodeThirteenChannels[113].cc, "TR");
+    strcpy(CountryCodeThirteenChannels[114].cc, "TT");
+    strcpy(CountryCodeThirteenChannels[115].cc, "TZ");
+
+    strcpy(CountryCodeThirteenChannels[116].cc, "UA");
+    strcpy(CountryCodeThirteenChannels[117].cc, "UY");
+    strcpy(CountryCodeThirteenChannels[118].cc, "UZ");
+
+    strcpy(CountryCodeThirteenChannels[119].cc, "VA");
+    strcpy(CountryCodeThirteenChannels[120].cc, "VE");
+    strcpy(CountryCodeThirteenChannels[121].cc, "VG");
+    strcpy(CountryCodeThirteenChannels[122].cc, "VN");
+
+    strcpy(CountryCodeThirteenChannels[123].cc, "YT");
+
+    strcpy(CountryCodeThirteenChannels[124].cc, "ZA");
+    strcpy(CountryCodeThirteenChannels[125].cc, "ZM");
+
+    strcpy(CountryCodeThirteenChannels[126].cc, "ED");
+
     _ism_debug = debug || ism_debug;
     reset();
 }
