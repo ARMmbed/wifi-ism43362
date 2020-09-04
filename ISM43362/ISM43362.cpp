@@ -524,52 +524,27 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
     if (_FwVersionId >= SINGLE_AP_SCAN_FW_VERSION_NUMBER) {
         AP_Scan_1by1 = true;
         if (!(_parser.send("F0=2"))) {
-            debug_if(_ism_debug, "\tISM43362: scan error\r\n");
+            debug_if(_ism_debug, "\tISM43362: F0=2 error\r\n");
             return 0;
         }
     } else {
         if (!(_parser.send("F0"))) {
-            debug_if(_ism_debug, "\tISM43362: scan error\r\n");
+            debug_if(_ism_debug, "\tISM43362: F0 error\r\n");
             return 0;
         }
     }
+    debug_if(_ism_debug, "\tISM43362: scan feature %u\r\n", AP_Scan_1by1);
 
 
     /* Parse the received buffer and fill AP buffer */
     /* Use %[^\n] instead of %s to allow having spaces in the string */
     while (_parser.recv("%[^\n^\r]\r\n", tmp)) {
         found = false;
-
-
-        if (res != 0 && limit != 0 && cnt >= limit) {
-            /* reached end */
-            if (AP_Scan_1by1 == true) {
-                /* continue to receive AP 1 by 1 from firmware until we get OK or ERROR */
-                while (strncmp("OK", (char *)tmp, 2) != 0) {
-                    if (strncmp("ERROR", (char *)tmp, 5) == 0) {
-                        print_rx_buff();
-                        _parser.flush();
-                        return 0;
-                    }
-                    if (!_parser.send("MR")) {
-                        print_rx_buff();
-                        _parser.flush();
-                        return 0;
-                    }
-                    if (!_parser.recv("%[^\n^\r]\r\n", tmp)) {
-                        print_rx_buff();
-                        _parser.flush();
-                        return 0;
-                    }
-                }
-            }
-            break;
-        }
+        debug_if(_ism_debug, "\tISM43362: received: %s\n", tmp);
 
         if (AP_Scan_1by1 == true) {
             /* In case of scan AP 1 by 1, end of list is detected thanks to OK or ERROR*/
             if (strncmp("ERROR", (char *)tmp, 5) == 0) {
-                print_rx_buff();
                 _parser.flush();
                 return 0;
             }
@@ -579,46 +554,50 @@ int ISM43362::scan(WiFiAccessPoint *res, unsigned limit)
             }
         }
 
-        nsapi_wifi_ap_t ap = {0};
-        debug_if(_ism_debug, "\tISM43362: received:%s\n", tmp);
-        ptr = strtok(tmp, ",");
-        num = 0;
-        while ((ptr != NULL) && (!found)) {
-            switch (num++) {
-                case 0: /* Ignore index */
-                case 4: /* Ignore Max Rate */
-                case 5: /* Ignore Network Type */
-                case 7: /* Ignore Radio Band */
-                    break;
-                case 1:
-                    ptr[strlen(ptr) - 1] = 0;
-                    strncpy((char *)ap.ssid,  ptr + 1, 32);
-                    break;
-                case 2:
-                    for (int i = 0; i < 6; i++) {
-                        ap.bssid[i] = ParseHexNumber(ptr + (i * 3), NULL);
-                    }
-                    break;
-                case 3:
-                    ap.rssi = ParseNumber(ptr, NULL);
-                    break;
-                case 6:
-                    ap.security = ParseSecurity(ptr);
-                    break;
-                case 8:
-                    ap.channel = ParseNumber(ptr, NULL);
-                    found = true;
-                    break;
-                default:
-                    break;
+        if (limit == 0 || cnt < limit) {
+            nsapi_wifi_ap_t ap = {0};
+            ptr = strtok(tmp, ",");
+            num = 0;
+            while ((ptr != NULL) && (!found)) {
+                switch (num++) {
+                    case 0: /* Ignore index */
+                    case 4: /* Ignore Max Rate */
+                    case 5: /* Ignore Network Type */
+                    case 7: /* Ignore Radio Band */
+                        break;
+                    case 1:
+                        ptr[strlen(ptr) - 1] = 0;
+                        strncpy((char *)ap.ssid,  ptr + 1, 32);
+                        break;
+                    case 2:
+                        for (int i = 0; i < 6; i++) {
+                            ap.bssid[i] = ParseHexNumber(ptr + (i * 3), NULL);
+                        }
+                        break;
+                    case 3:
+                        ap.rssi = ParseNumber(ptr, NULL);
+                        break;
+                    case 6:
+                        ap.security = ParseSecurity(ptr);
+                        break;
+                    case 8:
+                        ap.channel = ParseNumber(ptr, NULL);
+                        found = true;
+                        break;
+                    default:
+                        break;
+                }
+                ptr = strtok(NULL, ",");
             }
-            ptr = strtok(NULL, ",");
-        }
-        if (found == true) {
-            if (res != NULL) {
-                res[cnt] = WiFiAccessPoint(ap);
+
+            if (found == true) {
+                if (res != NULL) {
+                    res[cnt] = WiFiAccessPoint(ap);
+                }
+                cnt++;
             }
-            cnt++;
+        } else {
+            debug_if(_ism_debug, "\tISM43362: |-> discarded\r\n");
         }
 
         if (AP_Scan_1by1 == true) {
