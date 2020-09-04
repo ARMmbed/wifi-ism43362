@@ -27,7 +27,7 @@ static uint8_t *ism_wifi_thread_stack = NULL;
 #endif // MBED_CONF_ISM43362_READ_THREAD_STACK_STATICALLY_ALLOCATED == 1
 #endif // MBED_CONF_ISM43362_READ_THREAD_STACK_SIZE != 0
 
-                                            // Product ID,FW Revision,API Revision,Stack Revision,RTOS Revision,CPU Clock,Product Name
+// Product ID,FW Revision,API Revision,Stack Revision,RTOS Revision,CPU Clock,Product Name
 #define LATEST_FW_VERSION_NUMBER "C3.5.2.5" // ISM43362-M3G-L44-SPI,C3.5.2.5.STM,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi
 
 // activate / de-activate debug
@@ -72,7 +72,7 @@ ISM43362Interface::ISM43362Interface(bool debug)
 
     debug_if(_ism_debug, "ISM43362Interface: read_version = %" PRIu32 "\r\n", _FwVersion);
     /* FW Revision should be with format "CX.X.X.X" with X as a single digit */
-    if ( (_FwVersion < 1000) || (_FwVersion > 9999) ) {
+    if ((_FwVersion < 1000) || (_FwVersion > 9999)) {
         debug_if(_ism_debug, "ISM43362Interface: read_version issue\r\n");
     }
 
@@ -87,7 +87,7 @@ ISM43362Interface::ISM43362Interface(bool debug)
 }
 
 nsapi_error_t ISM43362Interface::connect(const char *ssid, const char *pass, nsapi_security_t security,
-                               uint8_t channel)
+                                         uint8_t channel)
 {
     if (channel != 0) {
         return NSAPI_ERROR_UNSUPPORTED;
@@ -632,7 +632,8 @@ void ISM43362Interface::update_conn_state_cb()
 
 #if MBED_CONF_ISM43362_PROVIDE_DEFAULT
 
-WiFiInterface *WiFiInterface::get_default_instance() {
+WiFiInterface *WiFiInterface::get_default_instance()
+{
     static ISM43362Interface ism;
     return &ism;
 }

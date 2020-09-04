@@ -26,8 +26,7 @@
 /** ISM43362Interface class
  *  Implementation of the NetworkStack for the ISM43362
  */
-class ISM43362Interface : public NetworkStack, public WiFiInterface
-{
+class ISM43362Interface : public NetworkStack, public WiFiInterface {
 public:
     /** ISM43362Interface lifetime
      * @param debug     Enable debugging
@@ -54,7 +53,7 @@ public:
      *  @return          0 on success, or error code on failure
      */
     virtual nsapi_error_t connect(const char *ssid, const char *pass, nsapi_security_t security = NSAPI_SECURITY_NONE,
-                        uint8_t channel = 0);
+                                  uint8_t channel = 0);
 
     /** Set the WiFi network credentials
      *
