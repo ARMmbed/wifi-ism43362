@@ -226,42 +226,37 @@ Function is updating WIFI_module_country_code with FR.
 */
 
 #ifdef MBED_CONF_ISM43362_WIFI_COUNTRY_CODE
-bool ISM43362::check_country_code(const char* country_code)
+bool ISM43362::check_country_code(const char *country_code)
 {
-  if ((!strcmp(country_code, "CA")) || (!strcmp(country_code, "US"))
-      || (!strcmp(country_code, "FR")) || (!strcmp(country_code, "JP")) )
-  {
-     strcpy(WIFI_module_country_code, country_code);
-    return true;
-  }
-
-  int k = 0;
-
-  while (strcmp(CountryCodeThirteenChannels[k].cc, "ED"))
-  {
-    if (!strcmp(CountryCodeThirteenChannels[k].cc, country_code))
-    {
-      strcpy(WIFI_module_country_code, "FR");
-      return true;
+    if ((!strcmp(country_code, "CA")) || (!strcmp(country_code, "US"))
+            || (!strcmp(country_code, "FR")) || (!strcmp(country_code, "JP"))) {
+        strcpy(WIFI_module_country_code, country_code);
+        return true;
     }
 
-    k++;
-  }
+    int k = 0;
 
-  k = 0;
+    while (strcmp(CountryCodeThirteenChannels[k].cc, "ED")) {
+        if (!strcmp(CountryCodeThirteenChannels[k].cc, country_code)) {
+            strcpy(WIFI_module_country_code, "FR");
+            return true;
+        }
 
-  while (strcmp(CountryCodeElevenChannels[k].cc, "ED"))
-  {
-    if (!strcmp(CountryCodeElevenChannels[k].cc, country_code))
-    {
-      strcpy(WIFI_module_country_code, "US");
-      return true;
+        k++;
     }
 
-    k++;
-  }
+    k = 0;
 
-  return false;
+    while (strcmp(CountryCodeElevenChannels[k].cc, "ED")) {
+        if (!strcmp(CountryCodeElevenChannels[k].cc, country_code)) {
+            strcpy(WIFI_module_country_code, "US");
+            return true;
+        }
+
+        k++;
+    }
+
+    return false;
 }
 #endif
 
@@ -288,12 +283,11 @@ int ISM43362::connect(const char *ap, const char *passPhrase, ism_security_t ap_
     }
 
 #ifdef MBED_CONF_ISM43362_WIFI_COUNTRY_CODE
-     /* Check country code is acceptable */
+    /* Check country code is acceptable */
     bool ret = check_country_code(MBED_CONF_ISM43362_WIFI_COUNTRY_CODE);
-    if (ret == false)
-    {
-      printf("ISM43362::connect Country Code ERROR\n");
-      return NSAPI_ERROR_PARAMETER;
+    if (ret == false) {
+        printf("ISM43362::connect Country Code ERROR\n");
+        return NSAPI_ERROR_PARAMETER;
     }
 
     if (!(_parser.send("CN=%s/0",  WIFI_module_country_code) && check_response())) {

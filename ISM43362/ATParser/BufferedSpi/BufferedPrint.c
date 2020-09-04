@@ -23,7 +23,7 @@
 
 size_t BufferedSpiThunk(void *buf_serial, const void *s, size_t length);
 
-int BufferedPrintfC(void *stream, int size, const char* format, va_list arg)
+int BufferedPrintfC(void *stream, int size, const char *format, va_list arg)
 {
     int r;
     char buffer[512];
@@ -33,11 +33,11 @@ int BufferedPrintfC(void *stream, int size, const char* format, va_list arg)
     memset(buffer, 0, size);
     r = vsprintf(buffer, format, arg);
     // this may not hit the heap but should alert the user anyways
-    if(r > (int32_t) size) {
+    if (r > (int32_t) size) {
         error("%s %d buffer overwrite (max_buf_size: %d exceeded: %d)!\r\n", __FILE__, __LINE__, size, r);
         return 0;
     }
-    if ( r > 0 ) {
+    if (r > 0) {
         BufferedSpiThunk(stream, buffer, r);
     }
     return r;
