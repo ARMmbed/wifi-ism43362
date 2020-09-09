@@ -76,7 +76,7 @@ ISM43362Interface::ISM43362Interface(bool debug)
         debug_if(_ism_debug, "ISM43362Interface: read_version issue\r\n");
     }
 
-#if TARGET_DISCO_L475VG_IOT01A
+#if !TARGET_DISCO_F413ZH
     if ((int32_t)_FwVersion < ParseNumber((char *)LATEST_FW_VERSION_NUMBER, NULL)) {
         debug_if(_ism_debug, "ISM43362Interface: please update FW\r\n");
     }

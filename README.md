@@ -11,6 +11,7 @@ ISM43362 module is soldered on the following platforms from STMicroelectronics
 
  * [DISCO_L475VG_IOT01A](https://os.mbed.com/platforms/ST-Discovery-L475E-IOT01A/)
  * [DISCO_F413ZH](https://os.mbed.com/platforms/ST-Discovery-F413H/)
+ * [B_L4S5I_IOT01A](https://os.mbed.com/platforms/B-L4S5I-IOT01A/)
 
 ## Configuration
 
@@ -53,8 +54,8 @@ Useful to use all the Radio Channels available in a country.
 
 The recommended firmware version is ISM43362-M3G-L44-SPI-C3.5.2.5.STM
 
-The utility to upgrade firmware on B-L475-IOT01A board can be found here: https://www.st.com/resource/en/utilities/inventek_fw_updater.zip
+The utility to upgrade firmware on B-L475-IOT01A and B_L4S5I_IOT01A boards can be found here: https://www.st.com/resource/en/utilities/inventek_fw_updater.zip
 
 It contains instructions and URL where to get firmware from (https://www.inventeksys.com/iwin/firmware/)
 
-Note that only Wifi module from DISCO_L475VG_IOT01A can be updated (HW limitation for DISCO_F413ZH).
+Note that only Wifi module from DISCO_F413ZH cannot be updated (HW limitation).
