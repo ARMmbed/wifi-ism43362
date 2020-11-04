@@ -388,7 +388,7 @@ int ISM43362Interface::socket_connect_nolock(void *handle, const SocketAddress &
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
     const char *proto = (socket->proto == NSAPI_UDP) ? "1" : "0";
-    if (!_ism.open(proto, socket->id, addr.get_ip_address(), addr.get_port())) {
+    if (_ism.open(proto, socket->id, addr.get_ip_address(), addr.get_port()) != NSAPI_ERROR_OK) {
         return NSAPI_ERROR_DEVICE_ERROR;
     }
     _ids[socket->id]  = true;

@@ -146,9 +146,13 @@ public:
     * @param id id to give the new socket, valid 0-4
     * @param port port to open connection with
     * @param addr the IP address of the destination
-    * @return true only if socket opened successfully
+    * @return
+    * @   NSAPI_ERROR_OK : socket opened successfully
+    * @   NSAPI_ERROR_PARAMETER : invalid configuration
+    * @   NSAPI_ERROR_DEVICE_ERROR :
+    * @   failure interfacing with the network processor
     */
-    bool open(const char *type, int id, const char *addr, int port);
+    int open(const char *type, int id, const char *addr, int port);
 
     /**
     * Sends data to an open socket
