@@ -478,6 +478,9 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
 
     if (!socket->connected) {
         _mutex.unlock();
+	if (socket->proto == NSAPI_UDP) {
+	   return NSAPI_ERROR_WOULD_BLOCK;
+	}
         return 0;
     }
 
