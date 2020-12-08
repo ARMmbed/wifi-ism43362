@@ -30,12 +30,8 @@ static uint8_t *ism_wifi_thread_stack = NULL;
 // Product ID,FW Revision,API Revision,Stack Revision,RTOS Revision,CPU Clock,Product Name
 #define LATEST_FW_VERSION_NUMBER "C3.5.2.5" // ISM43362-M3G-L44-SPI,C3.5.2.5.STM,v3.5.2,v1.4.0.rc1,v8.2.1,120000000,Inventek eS-WiFi
 
-// activate / de-activate debug
-#if MBED_CONF_MBED_TRACE_ENABLE
-#define ism_interface_debug 1
-#else
+// Set 1 to force debug information
 #define ism_interface_debug 0
-#endif
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
