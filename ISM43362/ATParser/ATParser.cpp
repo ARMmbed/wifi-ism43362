@@ -107,6 +107,7 @@ int ATParser::read(char *data)
         readsize = _serial_spi->read();
     } else {
         debug_if(dbg_on, "Pending data when reading from WIFI\r\n");
+        _bufferMutex.unlock();
         return -1;
     }
 
@@ -268,6 +269,7 @@ bool ATParser::vrecv(const char *response, va_list args)
     if (!_serial_spi->readable()) {
         // debug_if(dbg_on, "NO DATA, read again\r\n");
         if (_serial_spi->read() < 0) {
+            _bufferMutex.unlock();
             return false;
         }
     }
