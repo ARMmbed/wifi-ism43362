@@ -357,8 +357,8 @@ int ISM43362Interface::socket_close(void *handle)
     socket->connected = false;
     _ids[socket->id] = false;
     _socket_obj[socket->id] = 0;
+    _mutex.unlock();
     delete socket;
-   _mutex.unlock();
     return err;
 }
 
@@ -380,7 +380,6 @@ int ISM43362Interface::socket_connect(void *handle, const SocketAddress &addr)
     return ret;
 }
 
-/*  CAREFUL LOCK must be taken before calling this function */
 int ISM43362Interface::socket_connect_nolock(void *handle, const SocketAddress &addr)
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
@@ -445,7 +444,7 @@ int ISM43362Interface::socket_send(void *handle, const void *data, unsigned size
     return ret;
 }
 
-/*  CAREFUL LOCK must be taken before calling this function  */
+/*  CAREFULL LOCK must be taken before callling this function */
 int ISM43362Interface::socket_send_nolock(void *handle, const void *data, unsigned size)
 {
     struct ISM43362_socket *socket = (struct ISM43362_socket *)handle;
@@ -474,11 +473,10 @@ int ISM43362Interface::socket_recv(void *handle, void *data, unsigned size)
     // debug_if(_ism_debug, "ISM43362Interface socket_recv: req=%d read_data_size=%d connected %d\r\n", size, socket->read_data_size, socket->connected);
 
     if (!socket->connected) {
+        _mutex.unlock();
 	if (socket->proto == NSAPI_UDP) {
-	   _mutex.unlock();
 	   return NSAPI_ERROR_WOULD_BLOCK;
 	}
-	    _mutex.unlock();
         return 0;
     }
 
@@ -593,22 +591,18 @@ void ISM43362Interface::socket_attach(void *handle, void (*cb)(void *), void *da
 
 void ISM43362Interface::event()
 {
-     _mutex.lock();
     debug_if(_ism_debug, "ISM43362Interface: event\n");
     for (int i = 0; i < ISM43362_SOCKET_COUNT; i++) {
         if (_cbs[i].callback) {
             _cbs[i].callback(_cbs[i].data);
         }
     }
-    _mutex.unlock();
 }
 
 void ISM43362Interface::attach(Callback<void(nsapi_event_t, intptr_t)> status_cb)
 {
-    _mutex.lock();
     debug_if(_ism_debug, "ISM43362Interface: attach\n");
     _conn_stat_cb = status_cb;
-    _mutex.unlock();
 }
 
 nsapi_connection_status_t ISM43362Interface::get_connection_status() const
@@ -620,13 +614,11 @@ nsapi_connection_status_t ISM43362Interface::get_connection_status() const
 
 void ISM43362Interface::update_conn_state_cb()
 {
-    _mutex.lock();
     nsapi_connection_status_t prev_stat = _conn_stat;
     _conn_stat = _ism.connection_status();
     debug_if(_ism_debug, "ISM43362Interface: update_conn_state_cb %d -> %d\n", prev_stat, _conn_stat);
 
     if (prev_stat == _conn_stat) {
-        _mutex.unlock();
         return;
     }
 
@@ -634,7 +626,6 @@ void ISM43362Interface::update_conn_state_cb()
     if (_conn_stat_cb) {
         _conn_stat_cb(NSAPI_EVENT_CONNECTION_STATUS_CHANGE, _conn_stat);
     }
-    _mutex.unlock();
 }
 
 

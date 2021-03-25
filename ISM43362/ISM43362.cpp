@@ -175,6 +175,18 @@ bool ISM43362::check_response(void)
         return false;
     }
 
+    /*  Inventek module do stuffing / padding of data with 0x15,
+     *  in case buffer contains such */
+    while (1) {
+        int c = _parser.getc();
+        if (c == 0x15) {
+            // debug_if(_ism_debug, "\tISM43362: Flush char 0x%x\n", c);
+            continue;
+        } else {
+            /*  How to put it back if needed ? */
+            break;
+        }
+    }
     return true;
 }
 

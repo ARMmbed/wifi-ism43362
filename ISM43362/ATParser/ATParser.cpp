@@ -107,7 +107,6 @@ int ATParser::read(char *data)
         readsize = _serial_spi->read();
     } else {
         debug_if(dbg_on, "Pending data when reading from WIFI\r\n");
-        _bufferMutex.unlock();
         return -1;
     }
 
@@ -269,7 +268,6 @@ bool ATParser::vrecv(const char *response, va_list args)
     if (!_serial_spi->readable()) {
         // debug_if(dbg_on, "NO DATA, read again\r\n");
         if (_serial_spi->read() < 0) {
-            _bufferMutex.unlock();
             return false;
         }
     }
@@ -368,18 +366,6 @@ restart:
             // We only succeed if all characters in the response are matched
             if (count == j) {
                 debug_if(AT_COMMAND_PRINT, "AT= ====%s====\n", _buffer + offset);
-
-				/* removing padding (0x3E) */
-				{
-					const char PADDING = 0x3E;
-
-					if (*_buffer == PADDING)
-					{
-						debug_if(AT_COMMAND_PRINT, "REMOVING USELESS PADDING(0x3E) \n");
-						flush();
-					}
-				}
-
                 // Reuse the front end of the buffer
                 memcpy(_buffer, response, i);
                 _buffer[i] = 0;
