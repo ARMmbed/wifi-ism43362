@@ -120,7 +120,7 @@ bool ISM43362::reset(void)
     _resetpin = 0;
     wait_us(10000);
     _resetpin = 1;
-    rtos::ThisThread::sleep_for(500);
+    rtos::ThisThread::sleep_for(500ms);
 
     /* Wait for prompt line : the string is "> ". */
     /* As the space char is not detected by sscanf function in parser.recv, */

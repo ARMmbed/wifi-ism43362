@@ -45,7 +45,7 @@ int BufferedSpi::wait_cmddata_rdy_high(void)
 
     /* wait for dataready = 1 */
     while (dataready.read() == 0) {
-        if (timer.read_ms() > _timeout) {
+        if (chrono::duration_cast<chrono::milliseconds>(timer.elapsed_time()).count() > _timeout) {
             debug_if(local_debug, "ERROR: SPI write timeout\r\n");
             return -1;
         }
@@ -62,7 +62,7 @@ int BufferedSpi::wait_cmddata_rdy_rising_event(void)
     timer.start();
 
     while (_cmddata_rdy_rising_event == 1) {
-        if (timer.read_ms() > _timeout) {
+        if (chrono::duration_cast<chrono::milliseconds>(timer.elapsed_time()).count() > _timeout) {
             _cmddata_rdy_rising_event = 0;
             if (dataready.read() == 1) {
                 debug_if(local_debug, "ERROR: We missed rising event !! (timemout=%d)\r\n", _timeout);
