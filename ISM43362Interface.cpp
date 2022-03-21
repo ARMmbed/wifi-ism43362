@@ -364,7 +364,8 @@ int ISM43362Interface::socket_close(void *handle)
 
 int ISM43362Interface::socket_bind(void *handle, const SocketAddress &address)
 {
-    return NSAPI_ERROR_UNSUPPORTED;
+    /* Modified from original file to always report a successful status. */
+    return NSAPI_ERROR_OK;
 }
 
 int ISM43362Interface::socket_listen(void *handle, int backlog)
